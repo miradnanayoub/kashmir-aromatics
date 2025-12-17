@@ -10,7 +10,7 @@ export default function AboutPage() {
       <section className="relative h-[60vh] flex items-center justify-center">
         <div className="absolute inset-0">
           <Image 
-            src="https://images.unsplash.com/photo-1605218457298-601e83713606?q=80&w=2574&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1548013146-72479768bada?q=80&w=2576&auto=format&fit=crop"
             alt="Kashmir Valley"
             fill
             className="object-cover opacity-80"

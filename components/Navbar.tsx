@@ -12,16 +12,23 @@ export default function Navbar() {
   
   const { toggleCart, cartCount } = useCart();
 
+  // --- CONFIGURATION: Define your links here ---
+  // This prevents the code from guessing wrong paths (like putting Story inside Shop)
+  const navItems = [
+    { name: "Shop", href: "/shop" },
+    { name: "Hydrosols", href: "/shop/hydrosols" },      
+    { name: "Essential Oils", href: "/shop/essential-oils" }, 
+    { name: "Our Story", href: "/about" },        // Updated to point to /about
+  ];
+
   useEffect(() => {
     const handleScroll = () => {
-      // Change state when scrolled more than 20px
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // TEXT COLOR LOGIC: White when transparent (top), Black when white (scrolled)
   const textColorClass = isScrolled ? "text-gray-900" : "text-white";
 
   return (
@@ -35,12 +42,11 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           
-          {/* --- 1. LOGO SECTION (LEFT) --- */}
+          {/* --- 1. LOGO --- */}
           <div className="flex-shrink-0 cursor-pointer z-10">
             <Link href="/" className="block">
               <div className="relative w-32 h-10 md:w-40 md:h-12">
                 <Image 
-                  // CHANGE THIS: Ensure you have 'logo-white.png' and 'logo-black.png' in your public folder
                   src={isScrolled ? "/logo-black.png" : "/logo-white.png"} 
                   alt="Kashmir Aromatics" 
                   fill 
@@ -51,27 +57,25 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* --- 2. DESKTOP NAVIGATION (CENTER) --- */}
-          {/* absolute + left-1/2 + -translate-x-1/2 ensures perfect centering */}
+          {/* --- 2. DESKTOP NAVIGATION --- */}
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
-            {["Shop", "Hydrosols", "Essential Oils", "Our Story"].map((item) => (
+            {navItems.map((item) => (
               <Link
-                key={item}
-                href={item === "Shop" ? "/shop" : `/shop/${item.toLowerCase().replace(" ", "-")}`}
+                key={item.name}
+                href={item.href}
                 className={`text-sm font-medium hover:text-amber-500 transition-colors ${textColorClass}`}
               >
-                {item}
+                {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* --- 3. ICONS (RIGHT) --- */}
+          {/* --- 3. ICONS --- */}
           <div className={`flex items-center gap-5 z-10 ${textColorClass}`}>
             <button className="hover:text-amber-500 transition-colors">
               <Search className="w-5 h-5" />
             </button>
             
-            {/* CART BUTTON */}
             <button 
               onClick={toggleCart} 
               className="relative hover:text-amber-500 transition-colors"
@@ -84,7 +88,6 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Mobile Menu Toggle */}
             <button 
               className="md:hidden"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -96,7 +99,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* --- MOBILE MENU OVERLAY --- */}
+      {/* --- MOBILE MENU --- */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col p-6 transition-opacity duration-300">
           <div className="flex justify-end">
@@ -105,14 +108,15 @@ export default function Navbar() {
             </button>
           </div>
           <nav className="flex flex-col gap-6 mt-10 items-center">
-            {["Shop", "Hydrosols", "Essential Oils", "Our Story", "Contact"].map((item) => (
+            {/* Reuse the same config + Add Contact for mobile only */}
+            {[...navItems, { name: "Contact", href: "/contact" }].map((item) => (
               <Link
-                key={item}
-                href={item === "Shop" ? "/shop" : `/${item.toLowerCase().replace(" ", "-")}`}
+                key={item.name}
+                href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-2xl font-serif text-gray-900 hover:text-amber-600"
               >
-                {item}
+                {item.name}
               </Link>
             ))}
           </nav>

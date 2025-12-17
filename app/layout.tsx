@@ -32,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
+        suppressHydrationWarning={true}
         className={`${montserrat.variable} ${playfair.variable} antialiased bg-[#FAFAF9] text-[#1A1A1A]`}
       >
         {/* We wrap the whole app in CartProvider so the cart works on every page */}

@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import FeaturedCollection from "@/components/FeaturedCollection";
 import Image from "next/image";
+import Link from "next/dist/client/link";
 
 export default function Home() {
   return (
@@ -34,7 +35,7 @@ export default function Home() {
           </p>
           
           <button className="bg-white text-brand-black px-10 py-4 font-sans text-xs font-bold uppercase tracking-widest hover:bg-brand-gold hover:text-white transition-colors duration-300">
-            Shop Collection
+            <Link href="/shop">Shop Now</Link>
           </button>
         </div>
       </section>

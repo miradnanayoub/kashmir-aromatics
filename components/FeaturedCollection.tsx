@@ -30,11 +30,11 @@ const GET_FEATURED_PRODUCTS = gql`
 
 // 2. The Component (Now Async!)
 export default async function FeaturedCollection() {
-  let products = [];
+  let products: any[] = [];
   
   try {
     // Fetch data from WordPress
-    const { data } = await client.query({
+    const { data } = await client.query<any>({
       query: GET_FEATURED_PRODUCTS,
     });
     

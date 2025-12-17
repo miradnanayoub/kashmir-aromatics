@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const resolvedParams = await params;
   const id = resolvedParams.id;
 
-  let product = null;
+  let product: any = null;
 
   try {
     const { data } = await client.query<any>({

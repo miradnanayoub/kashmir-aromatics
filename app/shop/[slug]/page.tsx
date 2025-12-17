@@ -38,11 +38,11 @@ const GET_CATEGORY_PRODUCTS = gql`
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  let categoryData = null;
-  let products = [];
+  let categoryData: any = null;
+  let products: any[] = [];
 
   try {
-    const { data } = await client.query({
+    const { data } = await client.query<any>({
       query: GET_CATEGORY_PRODUCTS,
       variables: { slug: slug },
       fetchPolicy: 'no-cache'

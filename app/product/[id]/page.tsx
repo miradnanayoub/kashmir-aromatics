@@ -45,7 +45,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   let product = null;
 
   try {
-    const { data } = await client.query({
+    const { data } = await client.query<any>({
       query: GET_PRODUCT,
       variables: { id: id },
       fetchPolicy: 'no-cache'

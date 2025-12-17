@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext";
 interface ProductViewProps {
   product: {
     id: string;
+    databaseId: number;
     title: string;
     price: number;
     description: string;

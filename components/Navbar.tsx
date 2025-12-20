@@ -97,7 +97,13 @@ export default function Navbar() {
           {isSearchOpen && (
             <div className="absolute inset-0 bg-white z-[60] flex items-center px-6 md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
                <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center">
-                  <Search className="w-5 h-5 text-gray-400 mr-3" />
+                  {/* UPDATED: Shows Spinner if loading, otherwise Search Icon */}
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 text-amber-600 animate-spin mr-3" />
+                  ) : (
+                    <Search className="w-5 h-5 text-gray-400 mr-3" />
+                  )}
+                  
                   <input 
                     type="text" 
                     placeholder="Search..." 

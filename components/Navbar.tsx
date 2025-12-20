@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { ShoppingBag, Search, Menu, X, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
-import { client } from "@/lib/apolloClient"; // Import your existing client
-import { GET_SEARCH_RESULTS } from "@/lib/queries"; // Reuse your search query
+import { client } from "@/lib/client"; 
+import { GET_SEARCH_RESULTS } from "@/lib/queries"; 
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,7 +18,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null); // To detect clicks outside
+  const searchRef = useRef<HTMLDivElement>(null); 
   
   const router = useRouter();
   const { toggleCart, cartCount } = useCart();
@@ -30,35 +30,32 @@ export default function Navbar() {
     { name: "Our Story", href: "/about" },        
   ];
 
-  // 1. Handle Scroll Style
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 2. Handle "Click Outside" to close search
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
-        setResults([]); // Clear results on close
+        setResults([]); 
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 3. INSTANT SEARCH LOGIC (Debounced)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (searchQuery.length > 2) { // Only search if 3+ chars
+      if (searchQuery.length > 2) { 
         setIsLoading(true);
         try {
           const { data } = await client.query<any>({
             query: GET_SEARCH_RESULTS,
             variables: { search: searchQuery },
-            fetchPolicy: "no-cache" // Always get fresh data
+            fetchPolicy: "no-cache" 
           });
           setResults(data?.products?.nodes || []);
         } catch (error) {
@@ -69,12 +66,11 @@ export default function Navbar() {
       } else {
         setResults([]);
       }
-    }, 300); // Wait 300ms after typing stops
+    }, 300); 
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Handle "Enter" Key Submission
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -97,8 +93,52 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           
+          {/* --- MOBILE SEARCH OVERLAY (Full Width) --- */}
+          {isSearchOpen && (
+            <div className="absolute inset-0 bg-white z-[60] flex items-center px-6 md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+               <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center">
+                  <Search className="w-5 h-5 text-gray-400 mr-3" />
+                  <input 
+                    type="text" 
+                    placeholder="Search..." 
+                    className="flex-1 outline-none text-gray-900 text-base h-full py-4"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                  />
+               </form>
+               <button onClick={() => { setIsSearchOpen(false); setResults([]); }} className="p-2">
+                 <X className="w-6 h-6 text-gray-600" />
+               </button>
+
+               {/* Mobile Results Dropdown */}
+               {results.length > 0 && (
+                 <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-xl max-h-[60vh] overflow-y-auto">
+                    {results.map((product) => (
+                      <Link 
+                        key={product.databaseId} 
+                        href={`/product/${product.databaseId}`}
+                        onClick={() => { setIsSearchOpen(false); setResults([]); }}
+                        className="flex items-center gap-4 p-4 hover:bg-gray-50 border-b border-gray-50"
+                      >
+                        <div className="relative w-12 h-12 bg-gray-100 rounded flex-shrink-0">
+                          {product.image?.sourceUrl && (
+                            <Image src={product.image.sourceUrl} alt={product.name} fill className="object-cover rounded" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
+                          <p className="text-xs text-amber-600">{product.price || "Check Price"}</p>
+                        </div>
+                      </Link>
+                    ))}
+                 </div>
+               )}
+            </div>
+          )}
+
           {/* --- LOGO --- */}
-          <div className="flex-shrink-0 cursor-pointer z-10">
+          <div className={`flex-shrink-0 cursor-pointer z-10 ${isSearchOpen ? 'opacity-0 md:opacity-100' : 'opacity-100'}`}>
             <Link href="/" className="block">
               <div className="relative w-32 h-10 md:w-40 md:h-12">
                 <Image 
@@ -127,18 +167,18 @@ export default function Navbar() {
             </nav>
           )}
 
-          {/* --- ICONS & SEARCH --- */}
+          {/* --- ICONS & DESKTOP SEARCH --- */}
           <div className={`flex items-center gap-5 z-10 ${textColorClass}`}>
             
-            {/* SEARCH CONTAINER */}
-            <div ref={searchRef} className="relative">
+            {/* Desktop Search Logic */}
+            <div ref={searchRef} className="hidden md:block relative">
               {isSearchOpen ? (
                 <div className="relative">
-                  <form onSubmit={handleSearchSubmit} className="flex items-center bg-white/10 rounded-full px-3 py-1 border border-gray-200 bg-white">
+                  <form onSubmit={handleSearchSubmit} className="flex items-center bg-white rounded-full px-3 py-1 border border-gray-200">
                     <input 
                       type="text" 
-                      placeholder="Search products..." 
-                      className="bg-transparent outline-none text-sm w-48 md:w-64 text-gray-900 placeholder:text-gray-400"
+                      placeholder="Search..." 
+                      className="bg-transparent outline-none text-sm w-48 lg:w-64 text-gray-900 placeholder:text-gray-400"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       autoFocus
@@ -151,51 +191,44 @@ export default function Navbar() {
                       </button>
                     )}
                   </form>
-
-                  {/* INSTANT RESULTS DROPDOWN */}
+                  {/* Desktop Results Dropdown */}
                   {results.length > 0 && (
-                    <div className="absolute top-full mt-2 right-0 w-72 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden max-h-96 overflow-y-auto">
+                    <div className="absolute top-full mt-2 right-0 w-80 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden max-h-96 overflow-y-auto">
                       {results.map((product) => (
                         <Link 
                           key={product.databaseId} 
                           href={`/product/${product.databaseId}`}
                           onClick={() => { setIsSearchOpen(false); setResults([]); }}
-                          className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                          className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50"
                         >
                           <div className="relative w-10 h-10 flex-shrink-0 bg-gray-100 rounded">
                             {product.image?.sourceUrl && (
-                              <Image 
-                                src={product.image.sourceUrl} 
-                                alt={product.name} 
-                                fill 
-                                className="object-cover rounded"
-                              />
+                              <Image src={product.image.sourceUrl} alt={product.name} fill className="object-cover rounded" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div>
                             <h4 className="text-sm font-medium text-gray-900 truncate">{product.name}</h4>
-                            <p className="text-xs text-amber-600">{product.price || "Check Price"}</p>
+                            <p className="text-xs text-amber-600">{product.price}</p>
                           </div>
                         </Link>
                       ))}
-                      <button 
-                        onClick={handleSearchSubmit}
-                        className="w-full text-center py-2 text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-amber-600 hover:bg-gray-50"
-                      >
-                        View all {results.length} results
-                      </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <button 
-                  onClick={() => setIsSearchOpen(true)} 
-                  className="hover:text-amber-500 transition-colors"
-                >
+                <button onClick={() => setIsSearchOpen(true)} className="hover:text-amber-500 transition-colors">
                   <Search className="w-5 h-5" />
                 </button>
               )}
             </div>
+
+            {/* Mobile Search Icon (Trigger) */}
+            <button 
+              onClick={() => setIsSearchOpen(true)} 
+              className="md:hidden hover:text-amber-500 transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
             
             <button onClick={toggleCart} className="relative hover:text-amber-500 transition-colors">
               <ShoppingBag className="w-5 h-5" />
@@ -215,25 +248,13 @@ export default function Navbar() {
 
       {/* --- MOBILE MENU --- */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-white flex flex-col p-6">
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col p-6 transition-opacity duration-300">
           <div className="flex justify-end">
             <button onClick={() => setIsMobileMenuOpen(false)}>
               <X className="w-8 h-8 text-gray-900" />
             </button>
           </div>
           <nav className="flex flex-col gap-6 mt-10 items-center">
-            {/* Simple Mobile Search (No instant dropdown for simplicity) */}
-            <form onSubmit={handleSearchSubmit} className="w-full max-w-xs mb-4 flex border-b border-gray-300 pb-2">
-               <Search className="w-5 h-5 text-gray-400 mr-2" />
-               <input 
-                  type="text" 
-                  placeholder="Search products..." 
-                  className="w-full outline-none text-gray-900"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </form>
-
             {[...navItems, { name: "Contact", href: "/contact" }].map((item) => (
               <Link
                 key={item.name}

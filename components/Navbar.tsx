@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ShoppingBag, Search, Menu, X, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
-import { client } from "@/lib/client"; 
+import { client } from "@/lib/apolloClient"; 
 import { GET_SEARCH_RESULTS } from "@/lib/queries"; 
 
 export default function Navbar() {

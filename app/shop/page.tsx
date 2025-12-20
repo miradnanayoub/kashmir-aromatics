@@ -14,12 +14,10 @@ export default async function ShopPage({
 }) {
   const resolvedParams = await searchParams;
   
-  // 1. Prepare Variables
   const categoryId = resolvedParams.category ? Number(resolvedParams.category) : null;
   const sortOption = (resolvedParams.sort as string) || "date";
 
-  // Define Sort Order
-  let orderByClause = [{ field: "DATE", order: "DESC" }]; // Default: Newest
+  let orderByClause = [{ field: "DATE", order: "DESC" }]; 
 
   if (sortOption === "price_asc") {
     orderByClause = [{ field: "PRICE", order: "ASC" }];
@@ -29,12 +27,10 @@ export default async function ShopPage({
     orderByClause = [{ field: "TITLE", order: "ASC" }];
   }
 
-  // 2. Fetch Data
   let products: any[] = [];
   let categories: any[] = [];
 
   try {
-    // LOGIC: Choose the correct query based on whether we have a category ID
     const productQuery = categoryId ? GET_PRODUCTS_BY_CATEGORY : GET_ALL_PRODUCTS;
     const productVariables = categoryId 
       ? { categoryId, orderBy: orderByClause } 
@@ -52,7 +48,6 @@ export default async function ShopPage({
     ]);
 
     products = productsRes.data?.products?.nodes || [];
-    
     categories = categoriesRes.data?.productCategories?.nodes.map((cat: any) => ({
       id: cat.databaseId,
       name: cat.name,
@@ -64,24 +59,37 @@ export default async function ShopPage({
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
 
-      <div className="bg-white pt-32 pb-12 px-6 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto text-center">
-          <span className="text-amber-600 font-bold tracking-widest text-xs uppercase mb-2 block">
+      {/* --- HERO SECTION (New) --- */}
+      <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center mb-12">
+        <div className="absolute inset-0">
+          <Image 
+          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2600&auto=format&fit=crop" 
+          alt="Kashmir Aromatics Shop" 
+          fill 
+          className="object-cover"
+          priority
+          />
+          {/* Dark Overlay so white text is readable */}
+          <div className="absolute inset-0 bg-black/40" /> 
+        </div>
+        
+        <div className="relative z-10 text-center px-6">
+          <span className="text-amber-400 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
             Our Collection
           </span>
-          <h1 className="text-4xl md:text-5xl font-serif text-gray-900 mb-4">
+          <h1 className="text-5xl md:text-6xl font-serif text-white mb-6">
             Treasures of the Valley
           </h1>
-          <p className="text-gray-500 max-w-2xl mx-auto font-sans">
+          <p className="text-gray-100 max-w-2xl mx-auto font-sans text-lg font-light leading-relaxed">
             Handpicked botanicals, distilled with tradition. Explore our complete range of authentic Kashmiri wellness products.
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 pb-24">
         <ShopFilters categories={categories} />
 
         {products.length === 0 ? (
@@ -100,8 +108,6 @@ export default async function ShopPage({
                 className="group block"
               >
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
-                  
-                  {/* Image */}
                   <div className="relative aspect-[4/5] bg-gray-200 overflow-hidden">
                     {product.image?.sourceUrl ? (
                       <Image
@@ -111,13 +117,9 @@ export default async function ShopPage({
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        No Image
-                      </div>
+                      <div className="flex items-center justify-center h-full text-gray-400">No Image</div>
                     )}
                   </div>
-
-                  {/* Info */}
                   <div className="p-5 text-center flex-grow flex flex-col justify-between">
                     <div>
                       {product.productCategories?.nodes[0] && (
@@ -129,12 +131,10 @@ export default async function ShopPage({
                         {product.name}
                       </h3>
                     </div>
-                    
                     <div className="mt-3 text-gray-600 font-medium">
                       {product.price || "Check Price"} 
                     </div>
                   </div>
-
                 </div>
               </Link>
             ))}

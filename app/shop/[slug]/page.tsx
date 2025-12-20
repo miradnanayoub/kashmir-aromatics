@@ -31,44 +31,54 @@ export default async function CategoryPage({
     console.error("Error fetching category:", error);
   }
 
-  // --- 404 View (If slug is wrong) ---
+  // --- 404 View ---
   if (!categoryData) {
     return (
       <main className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
           <h1 className="font-serif text-3xl text-gray-900">Category Not Found</h1>
-          <p className="text-gray-500">We couldn't find a category for "{slug}"</p>
-          <Link href="/shop" className="text-amber-600 hover:underline">
-            Return to Shop
-          </Link>
+          <Link href="/shop" className="text-amber-600 hover:underline">Return to Shop</Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
 
-      {/* --- HEADER --- */}
-      <section className="bg-white pt-32 pb-12 px-6 border-b border-gray-100 text-center">
-        <span className="font-sans text-xs font-bold tracking-[0.3em] text-amber-600 uppercase">
-          Collection
-        </span>
-        <h1 className="font-serif text-4xl md:text-5xl text-gray-900 mt-4 mb-6">
-          {categoryData.name}
-        </h1>
-        {categoryData.description && (
-          <div 
-            className="max-w-2xl mx-auto text-gray-500 font-sans leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: categoryData.description }}
+      {/* --- HERO SECTION (New) --- */}
+      <section className="relative h-[40vh] min-h-[350px] flex items-center justify-center mb-12">
+        <div className="absolute inset-0">
+          <Image 
+          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2600&auto=format&fit=crop" 
+          alt="Kashmir Aromatics Shop" 
+          fill 
+          className="object-cover"
+          priority
           />
-        )}
+          <div className="absolute inset-0 bg-black/40" />
+        </div>
+
+        <div className="relative z-10 text-center px-6">
+          <span className="text-amber-400 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
+            Category
+          </span>
+          <h1 className="text-4xl md:text-6xl font-serif text-white mb-4">
+            {categoryData.name}
+          </h1>
+          {categoryData.description && (
+            <div 
+              className="max-w-2xl mx-auto text-gray-100 font-sans text-lg font-light leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: categoryData.description }}
+            />
+          )}
+        </div>
       </section>
 
       {/* --- PRODUCT GRID --- */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      <section className="max-w-7xl mx-auto px-6 pb-24">
         {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {products.map((product: any) => (

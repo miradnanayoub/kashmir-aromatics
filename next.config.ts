@@ -5,14 +5,20 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**', // This allows ANY path on Unsplash
       },
       {
         protocol: 'https',
-        hostname: 'kashmiraromatics.in', // Allows images from your WordPress
+        hostname: 'kashmiraromatics.in',
+        port: '',
+        pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'via.placeholder.com', // Useful for testing
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

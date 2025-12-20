@@ -55,7 +55,7 @@ export default function Navbar() {
       if (searchQuery.length > 2) { // Only search if 3+ chars
         setIsLoading(true);
         try {
-          const { data } = await client.query({
+          const { data } = await client.query<any>({
             query: GET_SEARCH_RESULTS,
             variables: { search: searchQuery },
             fetchPolicy: "no-cache" // Always get fresh data

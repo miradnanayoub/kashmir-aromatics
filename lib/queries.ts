@@ -116,3 +116,32 @@ export const GET_CATEGORY_BY_SLUG = gql`
     }
   }
 `;
+
+export const GET_SEARCH_RESULTS = gql`
+  query SearchProducts($search: String!) {
+    products(first: 20, where: { search: $search }) {
+      nodes {
+        databaseId
+        name
+        slug
+        image {
+          sourceUrl
+          altText
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+        }
+        productCategories {
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  }
+`;

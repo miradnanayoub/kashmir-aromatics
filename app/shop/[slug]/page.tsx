@@ -48,15 +48,15 @@ export default async function CategoryPage({
     <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
 
-      {/* --- HERO SECTION (New) --- */}
+      {/* --- HERO SECTION --- */}
       <section className="relative h-[40vh] min-h-[350px] flex items-center justify-center mb-12">
         <div className="absolute inset-0">
           <Image 
-          src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2600&auto=format&fit=crop" 
-          alt="Kashmir Aromatics Shop" 
-          fill 
-          className="object-cover"
-          priority
+            src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2600&auto=format&fit=crop" 
+            alt={categoryData.name}
+            fill 
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-black/40" />
         </div>
@@ -78,9 +78,10 @@ export default async function CategoryPage({
       </section>
 
       {/* --- PRODUCT GRID --- */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
+      <section className="max-w-[1400px] mx-auto px-6 pb-24">
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+          /* --- UPDATED GRID LAYOUT --- */
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
             {products.map((product: any) => (
               <Link
                 key={product.databaseId}
@@ -106,17 +107,17 @@ export default async function CategoryPage({
                   </div>
 
                   {/* Info */}
-                  <div className="p-5 text-center flex-grow flex flex-col justify-between">
+                  <div className="p-4 text-center flex-grow flex flex-col justify-between">
                     <div>
-                      <span className="text-xs text-amber-600 font-medium uppercase tracking-wider block mb-1">
+                      <span className="text-[10px] text-amber-600 font-medium uppercase tracking-wider block mb-1">
                         {categoryData.name}
                       </span>
-                      <h3 className="text-lg font-serif text-gray-900 group-hover:text-amber-700 transition-colors">
+                      <h3 className="text-base font-serif text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-2">
                         {product.name}
                       </h3>
                     </div>
                     
-                    <div className="mt-3 text-gray-600 font-medium">
+                    <div className="mt-2 text-sm text-gray-600 font-medium">
                       {product.price || "Check Price"} 
                     </div>
                   </div>

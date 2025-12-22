@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="bg-brand-black text-brand-cream border-t border-white/10 pt-20 pb-10">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         
-        {/* Column 1: Brand */}
+        {/* Column 1: Brand & Logo */}
         <div className="space-y-6">
-          <h3 className="font-serif text-2xl text-white">Kashmir Aromatics</h3>
+          {/* Logo Replaces Text Title */}
+          <div className="relative w-40 h-12">
+            <Image 
+              src="/logo-white.png" 
+              alt="Kashmir Aromatics" 
+              fill 
+              className="object-contain" 
+            />
+          </div>
           <p className="text-white/60 text-sm leading-relaxed">
             Pure, authentic aromatics sourced directly from the valleys of Kashmir. 
             Sustainable, organic, and crafted with care.
@@ -28,6 +37,8 @@ export default function Footer() {
             <li><Link href="/shop/hydrosols" className="hover:text-white transition">Hydrosols</Link></li>
             <li><Link href="/shop/perfumes" className="hover:text-white transition">Perfumes</Link></li>
             <li><Link href="/shop/gift-sets" className="hover:text-white transition">Gift Sets</Link></li>
+            {/* Added Track Order Link */}
+            <li><Link href="/track-order" className="hover:text-white transition">Track Order</Link></li>
           </ul>
         </div>
 

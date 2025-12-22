@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; 
+import { useRouter, usePathname } from "next/navigation"; // Added usePathname
 import { ShoppingBag, Search, Menu, X, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
@@ -21,6 +21,7 @@ export default function Navbar() {
   const searchRef = useRef<HTMLDivElement>(null); 
   
   const router = useRouter();
+  const pathname = usePathname(); // Get current URL path
   const { toggleCart, cartCount } = useCart();
 
   const navItems = [
@@ -30,12 +31,27 @@ export default function Navbar() {
     { name: "Our Story", href: "/about" },        
   ];
 
+  // --- LOGIC: WHICH PAGES HAVE HERO IMAGES? ---
+  // If a page has a Hero Image, we want a Transparent Navbar at the top.
+  // If NOT (like Track Order, Cart, Product), we want a Solid White Navbar always.
+  const hasHeroImage = 
+    pathname === "/" || 
+    pathname === "/shop" || 
+    pathname === "/about" || 
+    pathname?.startsWith("/shop/"); // Includes categories like /shop/hydrosols
+
+  // If we are scrolled OR if this page doesn't have a hero section, force the "Solid" look.
+  const showSolidNav = isScrolled || !hasHeroImage;
+
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ... (Search Logic remains same) ...
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -80,30 +96,29 @@ export default function Navbar() {
     }
   };
 
-  const textColorClass = isScrolled ? "text-gray-900" : "text-white";
+  // Dynamic Styles based on showSolidNav
+  const textColorClass = showSolidNav ? "text-gray-900" : "text-white";
+  const logoSrc = showSolidNav ? "/logo-black.png" : "/logo-white.png";
+  const headerBgClass = showSolidNav 
+    ? "bg-white/95 backdrop-blur-md border-gray-100 py-3 shadow-sm"
+    : "bg-transparent border-transparent py-5";
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
-          isScrolled
-            ? "bg-white/95 backdrop-blur-md border-gray-100 py-3 shadow-sm"
-            : "bg-transparent border-transparent py-5"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${headerBgClass}`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           
-          {/* --- MOBILE SEARCH OVERLAY (Full Width) --- */}
+          {/* --- MOBILE SEARCH OVERLAY --- */}
           {isSearchOpen && (
             <div className="absolute inset-0 bg-white z-[60] flex items-center px-6 md:hidden animate-in fade-in slide-in-from-top-2 duration-200">
                <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center">
-                  {/* UPDATED: Shows Spinner if loading, otherwise Search Icon */}
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 text-amber-600 animate-spin mr-3" />
                   ) : (
                     <Search className="w-5 h-5 text-gray-400 mr-3" />
                   )}
-                  
                   <input 
                     type="text" 
                     placeholder="Search..." 
@@ -116,8 +131,6 @@ export default function Navbar() {
                <button onClick={() => { setIsSearchOpen(false); setResults([]); }} className="p-2">
                  <X className="w-6 h-6 text-gray-600" />
                </button>
-
-               {/* Mobile Results Dropdown */}
                {results.length > 0 && (
                  <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-xl max-h-[60vh] overflow-y-auto">
                     {results.map((product) => (
@@ -148,7 +161,7 @@ export default function Navbar() {
             <Link href="/" className="block">
               <div className="relative w-32 h-10 md:w-40 md:h-12">
                 <Image 
-                  src={isScrolled ? "/logo-black.png" : "/logo-white.png"} 
+                  src={logoSrc} 
                   alt="Kashmir Aromatics" 
                   fill 
                   className="object-contain" 
@@ -173,10 +186,9 @@ export default function Navbar() {
             </nav>
           )}
 
-          {/* --- ICONS & DESKTOP SEARCH --- */}
+          {/* --- ICONS --- */}
           <div className={`flex items-center gap-5 z-10 ${textColorClass}`}>
             
-            {/* Desktop Search Logic */}
             <div ref={searchRef} className="hidden md:block relative">
               {isSearchOpen ? (
                 <div className="relative">
@@ -197,7 +209,6 @@ export default function Navbar() {
                       </button>
                     )}
                   </form>
-                  {/* Desktop Results Dropdown */}
                   {results.length > 0 && (
                     <div className="absolute top-full mt-2 right-0 w-80 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden max-h-96 overflow-y-auto">
                       {results.map((product) => (
@@ -228,11 +239,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Search Icon (Trigger) */}
-            <button 
-              onClick={() => setIsSearchOpen(true)} 
-              className="md:hidden hover:text-amber-500 transition-colors"
-            >
+            <button onClick={() => setIsSearchOpen(true)} className="md:hidden hover:text-amber-500 transition-colors">
               <Search className="w-5 h-5" />
             </button>
             
@@ -251,8 +258,8 @@ export default function Navbar() {
           </div>
         </div>
       </header>
-
-      {/* --- MOBILE MENU --- */}
+      
+      {/* Mobile Menu logic... (Keep existing) */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col p-6 transition-opacity duration-300">
           <div className="flex justify-end">
@@ -261,7 +268,7 @@ export default function Navbar() {
             </button>
           </div>
           <nav className="flex flex-col gap-6 mt-10 items-center">
-            {[...navItems, { name: "Contact", href: "/contact" }].map((item) => (
+             {[...navItems, { name: "Contact", href: "/contact" }].map((item) => (
               <Link
                 key={item.name}
                 href={item.href}

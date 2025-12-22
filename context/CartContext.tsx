@@ -89,8 +89,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // --- CHECKOUT LOGIC ---
   const checkout = () => {
     // Debug Alert (Remove this later after it works)
-    alert("Checkout Process Started!"); 
-    console.log("--- DEBUG: Checkout Started ---");
+   // alert("Checkout Process Started!"); 
+    //console.log("--- DEBUG: Checkout Started ---");
 
     if (items.length === 0) {
       alert("Your cart is empty.");

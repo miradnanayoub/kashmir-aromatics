@@ -13,7 +13,7 @@ export default function ProductCard({ product }: { product: any }) {
     return null; 
   }
 
-  // Helper to get raw price number (removes existing symbols if any)
+  // Helper to get raw price number
   const rawPrice = product.price?.replace(/[^\d.]/g, "") || "0";
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -34,10 +34,10 @@ export default function ProductCard({ product }: { product: any }) {
 
   return (
     <Link href={`/product/${product.databaseId}`} className="group block h-full">
-      <div className="bg-white rounded-[2rem] p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 h-full flex flex-col relative">
+      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 h-full flex flex-col relative">
         
         {/* --- IMAGE SECTION --- */}
-        <div className="relative aspect-[4/5] w-full rounded-[1.5rem] overflow-hidden mb-4 bg-gray-50">
+        <div className="relative aspect-[4/5] w-full rounded-[1rem] md:rounded-[1.5rem] overflow-hidden mb-3 md:mb-4 bg-gray-50">
           {product.image?.sourceUrl ? (
             <Image
               src={product.image.sourceUrl}
@@ -47,44 +47,50 @@ export default function ProductCard({ product }: { product: any }) {
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-300">
-              <span className="text-xs uppercase tracking-widest">No Image</span>
+              <span className="text-[10px] uppercase tracking-widest">No Image</span>
             </div>
           )}
-          
-          {/* Wishlist Button Removed Here */}
         </div>
 
         {/* --- CONTENT SECTION --- */}
-        <div className="px-2 pb-2 flex flex-col flex-grow justify-between">
+        <div className="px-1 md:px-2 pb-1 md:pb-2 flex flex-col flex-grow justify-between">
           <div>
             <div className="flex justify-between items-start mb-1">
-              <h3 className="font-serif text-lg font-bold text-gray-900 leading-tight group-hover:text-brand-gold transition-colors">
+              {/* Title: Smaller on mobile (text-sm), larger on desktop (md:text-lg) */}
+              <h3 className="font-serif text-sm md:text-lg font-bold text-gray-900 leading-tight group-hover:text-brand-gold transition-colors line-clamp-2">
                 {product.name}
               </h3>
-              <div className="flex items-center gap-1 text-brand-gold shrink-0 ml-2">
-                <Star className="w-4 h-4 fill-current" />
-                <span className="text-xs font-bold text-gray-900">4.9</span>
+              
+              {/* Rating: Scaled down slightly on mobile */}
+              <div className="flex items-center gap-1 text-brand-gold shrink-0 ml-1 md:ml-2">
+                <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
+                <span className="text-[10px] md:text-xs font-bold text-gray-900">4.9</span>
               </div>
             </div>
             
-            <p className="text-gray-500 text-xs font-medium mb-5">
+            {/* Category: Hidden on very small screens if needed, or kept small */}
+            <p className="text-gray-500 text-[10px] md:text-xs font-medium mb-3 md:mb-5 line-clamp-1">
                {product.productCategories?.nodes[0]?.name || "Essential Oil"}
             </p>
           </div>
 
-          <div className="flex items-center justify-between mt-auto">
-            {/* Price with Rupee Logo */}
-            <div className="text-lg font-bold text-gray-900 flex items-center font-serif">
-              <span className="mr-1">₹</span>{rawPrice}
+          <div className="flex items-center justify-between mt-auto gap-2">
+            {/* Price: Adjusted size */}
+            <div className="text-sm md:text-lg font-bold text-gray-900 flex items-center font-serif whitespace-nowrap">
+              <span className="mr-0.5 md:mr-1">₹</span>{rawPrice}
             </div>
 
-            {/* Add to Cart Button */}
+            {/* Add to Cart Button: 
+                - Mobile: Circle icon only (p-2.5)
+                - Desktop: Pill shape with text (md:px-6 md:py-3)
+            */}
             <button
               onClick={handleAddToCart}
-              className="bg-brand-black text-white px-6 py-3 rounded-full flex items-center gap-2 hover:bg-brand-gold transition-colors shadow-lg group/btn"
+              className="bg-brand-black text-white p-2.5 md:px-6 md:py-3 rounded-full flex items-center justify-center gap-2 hover:bg-brand-gold transition-colors shadow-lg group/btn shrink-0"
+              aria-label="Add to cart"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span className="text-sm font-bold">Add</span>
+              <span className="text-sm font-bold hidden md:block">Add</span>
             </button>
           </div>
         </div>

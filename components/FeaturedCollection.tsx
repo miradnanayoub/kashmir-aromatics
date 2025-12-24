@@ -1,5 +1,5 @@
 import ProductCard from "./ProductCard";
-import { client } from "@/lib/apolloClient"; // Import our new client
+import { client } from "@/lib/apolloClient";
 import { gql } from "@apollo/client";
 
 // 1. The GraphQL Query
@@ -17,6 +17,7 @@ const GET_FEATURED_PRODUCTS = gql`
         }
         image {
           sourceUrl
+          altText
         }
         productCategories {
           nodes {
@@ -28,36 +29,25 @@ const GET_FEATURED_PRODUCTS = gql`
   }
 `;
 
-// 2. The Component (Now Async!)
+// 2. The Component
 export default async function FeaturedCollection() {
   let products: any[] = [];
   
   try {
-    // Fetch data from WordPress
     const { data } = await client.query<any>({
       query: GET_FEATURED_PRODUCTS,
+      fetchPolicy: "no-cache" // Ensure fresh data
     });
     
-    // Transform WordPress data to match our ProductCard format
-    products = data?.products?.nodes.map((node: any) => ({
-      id: node.databaseId.toString(), // We use databaseId for cleaner IDs
-      title: node.name,
-      category: node.productCategories?.nodes[0]?.name || "Kashmir Aromatics",
-      price: node.price ? parseFloat(node.price) : 0, // Handle missing prices
-      image: node.image?.sourceUrl || "https://images.unsplash.com/photo-1596434458928-8608e57973c4", // Fallback image
-    })) || [];
+    // FIX: Don't map/transform the data. Pass the raw nodes directly.
+    products = data?.products?.nodes || [];
 
   } catch (error) {
     console.error("Failed to fetch products:", error);
-    // You could return a fallback UI here if needed
   }
 
   if (products.length === 0) {
-    return (
-      <section className="py-24 bg-brand-cream text-center">
-        <p>Loading products from Kashmir Aromatics...</p>
-      </section>
-    );
+    return null; // Don't show anything if no products found
   }
 
   return (
@@ -81,8 +71,9 @@ export default async function FeaturedCollection() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 md:gap-x-8 md:gap-y-12">
-          {products.map((product: any) => (
-            <ProductCard key={product.id} {...product} />
+          {products.map((node: any) => (
+            // FIX: Pass the raw 'node' as the 'product' prop
+            <ProductCard key={node.databaseId} product={node} />
           ))}
         </div>
       </div>

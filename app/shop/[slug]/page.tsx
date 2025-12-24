@@ -31,7 +31,6 @@ export default async function CategoryPage({
     console.error("Error fetching category:", error);
   }
 
-  // --- 404 View ---
   if (!categoryData) {
     return (
       <main className="min-h-screen bg-gray-50">
@@ -48,40 +47,26 @@ export default async function CategoryPage({
     <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
 
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-[40vh] min-h-[350px] flex items-center justify-center mb-12">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2600&auto=format&fit=crop" 
-            alt={categoryData.name}
-            fill 
-            className="object-cover"
-            priority
+      {/* --- NEW HEADER SECTION (No Image) --- */}
+      <div className="pt-32 pb-12 px-6 max-w-[1400px] mx-auto border-b border-gray-200 mb-12 text-center">
+        <span className="text-amber-600 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
+          Category
+        </span>
+        <h1 className="text-4xl md:text-5xl font-serif text-gray-900 mb-6 capitalize">
+          {categoryData.name}
+        </h1>
+        {categoryData.description && (
+          <div 
+            className="text-gray-600 font-sans text-lg font-light max-w-3xl mx-auto leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: categoryData.description }}
           />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-
-        <div className="relative z-10 text-center px-6">
-          <span className="text-amber-400 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
-            Category
-          </span>
-          <h1 className="text-4xl md:text-6xl font-serif text-white mb-4">
-            {categoryData.name}
-          </h1>
-          {categoryData.description && (
-            <div 
-              className="max-w-2xl mx-auto text-gray-100 font-sans text-lg font-light leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: categoryData.description }}
-            />
-          )}
-        </div>
-      </section>
+        )}
+      </div>
 
       {/* --- PRODUCT GRID --- */}
       <section className="max-w-[1400px] mx-auto px-6 pb-24">
         {products.length > 0 ? (
-          /* --- UPDATED GRID LAYOUT --- */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-6">
             {products.map((product: any) => (
               <Link
                 key={product.databaseId}
@@ -90,7 +75,6 @@ export default async function CategoryPage({
               >
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
                   
-                  {/* Image */}
                   <div className="relative aspect-[4/5] bg-gray-200 overflow-hidden">
                     {product.image?.sourceUrl ? (
                       <Image
@@ -106,7 +90,6 @@ export default async function CategoryPage({
                     )}
                   </div>
 
-                  {/* Info */}
                   <div className="p-4 text-center flex-grow flex flex-col justify-between">
                     <div>
                       <span className="text-[10px] text-amber-600 font-medium uppercase tracking-wider block mb-1">

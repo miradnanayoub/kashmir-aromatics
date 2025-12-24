@@ -34,7 +34,8 @@ export default function ShopFilters({ categories }: { categories: Category[] }) 
   return (
     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
       {/* Categories Buttons */}
-      <div className="flex flex-wrap gap-2">
+      {/* UPDATED: Added 'justify-center md:justify-start' to center on mobile only */}
+      <div className="flex flex-wrap justify-center md:justify-start gap-2">
         <button
           onClick={() => handleFilterChange("category", "")}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${

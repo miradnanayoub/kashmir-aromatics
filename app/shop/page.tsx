@@ -59,34 +59,11 @@ export default async function ShopPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#FAFAF9]">
+    // Added pt-28 md:pt-32 to push content below the fixed navbar
+    <main className="min-h-screen bg-[#FAFAF9] pt-28 md:pt-32">
       <Navbar />
 
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center mb-12">
-        <div className="absolute inset-0">
-          <Image 
-            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2600&auto=format&fit=crop" 
-            alt="Kashmir Aromatics Shop" 
-            fill 
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/40" /> 
-        </div>
-        
-        <div className="relative z-10 text-center px-6">
-          <span className="text-amber-400 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
-            Our Collection
-          </span>
-          <h1 className="text-5xl md:text-6xl font-serif text-white mb-6">
-            Treasures of the Valley
-          </h1>
-          <p className="text-gray-100 max-w-2xl mx-auto font-sans text-lg font-light leading-relaxed">
-            Handpicked botanicals, distilled with tradition. Explore our complete range of authentic Kashmiri wellness products.
-          </p>
-        </div>
-      </section>
+      {/* Hero section removed completely */}
 
       <div className="max-w-[1400px] mx-auto px-6 pb-24">
         <ShopFilters categories={categories} />
@@ -99,9 +76,8 @@ export default async function ShopPage({
             </Link>
           </div>
         ) : (
-          /* --- UPDATED GRID LAYOUT --- */
-          /* Changed from lg:grid-cols-3 to lg:grid-cols-4 and gap-8 to gap-6 */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+          /* --- YOUR PREFERRED GRID (Saved from memory) --- */
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-6">
             {products.map((product: any) => (
               <Link
                 key={product.databaseId}

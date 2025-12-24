@@ -35,10 +35,8 @@ export default function Navbar() {
   // If a page has a Hero Image, we want a Transparent Navbar at the top.
   // If NOT (like Track Order, Cart, Product), we want a Solid White Navbar always.
   const hasHeroImage = 
-    pathname === "/" || 
-    pathname === "/shop" || 
-    pathname === "/about" || 
-    pathname?.startsWith("/shop/"); // Includes categories like /shop/hydrosols
+    pathname === "/" ||  
+    pathname === "/about"; // Includes categories like /shop/hydrosols
 
   // If we are scrolled OR if this page doesn't have a hero section, force the "Solid" look.
   const showSolidNav = isScrolled || !hasHeroImage;

@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
-import Image from "next/image";
+import ProductCard from "@/components/ProductCard"; // <--- Import the component
 import { client } from "@/lib/apolloClient";
 import { GET_CATEGORY_BY_SLUG } from "@/lib/queries";
 
@@ -31,6 +31,7 @@ export default async function CategoryPage({
     console.error("Error fetching category:", error);
   }
 
+  // --- EMPTY STATE IF CATEGORY DOESN'T EXIST ---
   if (!categoryData) {
     return (
       <main className="min-h-screen bg-gray-50">
@@ -47,7 +48,7 @@ export default async function CategoryPage({
     <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
 
-      {/* --- NEW HEADER SECTION (No Image) --- */}
+      {/* --- HEADER SECTION --- */}
       <div className="pt-32 pb-12 px-6 max-w-[1400px] mx-auto border-b border-gray-200 mb-12 text-center">
         <span className="text-amber-600 font-bold tracking-[0.2em] text-xs uppercase mb-3 block">
           Category
@@ -66,49 +67,14 @@ export default async function CategoryPage({
       {/* --- PRODUCT GRID --- */}
       <section className="max-w-[1400px] mx-auto px-6 pb-24">
         {products.length > 0 ? (
+          
+          /* Using the exact same Grid classes as the Shop Page */
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-6">
             {products.map((product: any) => (
-              <Link
-                key={product.databaseId}
-                href={`/product/${product.databaseId}`}
-                className="group block"
-              >
-                <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col">
-                  
-                  <div className="relative aspect-[4/5] bg-gray-200 overflow-hidden">
-                    {product.image?.sourceUrl ? (
-                      <Image
-                        src={product.image.sourceUrl}
-                        alt={product.image.altText || product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        No Image
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-4 text-center flex-grow flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] text-amber-600 font-medium uppercase tracking-wider block mb-1">
-                        {categoryData.name}
-                      </span>
-                      <h3 className="text-base font-serif text-gray-900 group-hover:text-amber-700 transition-colors line-clamp-2">
-                        {product.name}
-                      </h3>
-                    </div>
-                    
-                    <div className="mt-2 text-sm text-gray-600 font-medium">
-                      {product.price || "Check Price"} 
-                    </div>
-                  </div>
-
-                </div>
-              </Link>
+              <ProductCard key={product.databaseId} product={product} />
             ))}
           </div>
+
         ) : (
           <div className="text-center py-20">
             <p className="text-gray-400">No products found in this category.</p>

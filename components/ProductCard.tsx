@@ -21,7 +21,7 @@ export default function ProductCard({ product }: { product: any }) {
     e.stopPropagation();
 
     addItem({
-      id: product.id,
+      id: product.databaseId.toString(), 
       databaseId: product.databaseId,
       title: product.name,
       price: parseFloat(rawPrice),

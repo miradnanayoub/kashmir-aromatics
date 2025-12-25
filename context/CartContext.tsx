@@ -23,7 +23,7 @@ interface CartContextType {
   isCartOpen: boolean;
   cartTotal: number;
   cartCount: number;
-  checkout: () => void; // <--- This must be here!
+  checkout: () => void; 
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -63,7 +63,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, newItem];
     });
-    setIsCartOpen(true);
+    
+    // --- FIX: REMOVED THE AUTO-OPEN COMMAND ---
+    // setIsCartOpen(true);  <-- This line is now gone.
   };
 
   const removeItem = (id: string) => {
@@ -127,7 +129,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isCartOpen, 
         cartTotal, 
         cartCount, 
-        checkout // <--- Important: Passing the function to the app
+        checkout 
       }}
     >
       {children}

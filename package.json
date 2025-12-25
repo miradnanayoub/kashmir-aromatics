@@ -17,6 +17,7 @@
     "nextjs-toploader": "^3.9.17",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "react-hot-toast": "^2.6.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

@@ -4,44 +4,44 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Star } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import toast from "react-hot-toast";
 
 export default function ProductCard({ product }: { product: any }) {
-  const { addItem, toggleCart } = useCart();
+  // FIX 1: We only ask for 'addItem'. We do NOT ask for 'toggleCart'.
+  const { addItem } = useCart();
 
   // --- SAFETY GUARD ---
   if (!product || !product.databaseId) {
     return null; 
   }
 
-  // 1. Parse the price to a clean Number (removes currency symbols and string artifacts)
   const priceValue = parseFloat(product.price?.replace(/[^\d.]/g, "") || "0");
 
-  // 2. Format for Display: Indian Locale, No Decimals (e.g., "2,500")
   const displayPrice = priceValue.toLocaleString('en-IN', {
     maximumFractionDigits: 0, 
     minimumFractionDigits: 0
   });
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    // No need for preventDefault as button is z-20 above the Link overlay
+    // Add item to global cart state
     addItem({
-      id: product.databaseId.toString(), // Force unique string ID
+      id: product.databaseId.toString(),
       databaseId: product.databaseId,
       title: product.name,
-      price: priceValue, // Send raw number to cart
+      price: priceValue,
       image: product.image?.sourceUrl || "",
       quantity: 1,
       category: product.productCategories?.nodes[0]?.name || "General",
     });
-    toggleCart(); 
+    
+    // FIX 2: Trigger Toast ONLY. The 'toggleCart()' line is deleted.
+    toast.success(`${product.name} added to cart`);
   };
 
   return (
     <div className="group relative block h-full">
-      
       <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 h-full flex flex-col relative">
         
-        {/* Overlay Link (Z-10) */}
         <Link 
           href={`/product/${product.databaseId}`} 
           className="absolute inset-0 z-10 rounded-[1.5rem] md:rounded-[2rem]"
@@ -84,13 +84,10 @@ export default function ProductCard({ product }: { product: any }) {
           </div>
 
           <div className="flex items-center justify-between mt-auto gap-2">
-            
-            {/* PRICE: Cleaned and Formatted (e.g. ₹250) */}
             <div className="text-sm md:text-lg font-bold text-gray-900 flex items-center font-serif whitespace-nowrap">
               <span className="mr-0.5 md:mr-1">₹</span>{displayPrice}
             </div>
 
-            {/* BUTTON (Z-20) */}
             <button
               onClick={handleAddToCart}
               className="relative z-20 bg-brand-black text-white p-2.5 md:px-6 md:py-3 rounded-full flex items-center justify-center gap-2 hover:bg-brand-gold transition-colors shadow-lg group/btn shrink-0"

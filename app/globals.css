@@ -37,3 +37,22 @@ html {
 .animate-slide-in {
   animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* added to cart Toast */
+
+/* --- TOAST ANIMATION: PREMIUM SLIDE --- */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(110%); /* Start completely off-screen to the right */
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0); /* End at normal position */
+    opacity: 1;
+  }
+}
+
+.toast-slide-in {
+  /* We use !important to override the library's default "Pop" animation */
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}

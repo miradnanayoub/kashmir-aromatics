@@ -2,125 +2,171 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Minus, Plus, ChevronDown } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { Star, Minus, Plus, ShoppingBag } from "lucide-react";
+import toast from "react-hot-toast";
 
-// Define what data this component expects
-interface ProductViewProps {
-  product: {
-    id: string;
-    databaseId: number;
-    title: string;
-    price: number;
-    description: string;
-    category: string;
-    images: string[];
-    stockStatus: string;
-  };
-}
-
-export default function ProductView({ product }: ProductViewProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<string | null>("description");
+export default function ProductView({ product }: { product: any }) {
   const { addItem } = useCart();
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(product.images[0]);
+
+  const displayPrice = product.price.toLocaleString('en-IN', {
+    maximumFractionDigits: 0, 
+    minimumFractionDigits: 0
+  });
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
+      id: product.databaseId.toString(),
       databaseId: product.databaseId,
       title: product.title,
       price: product.price,
-      image: product.images[0], // Use the first image as thumbnail
+      image: product.images[0],
       quantity: quantity,
       category: product.category,
     });
+    
+    toast.success(`${product.title} added to cart`);
   };
 
   return (
-    <div className="pt-24 md:pt-32 max-w-7xl mx-auto px-4 md:px-6 pb-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
+    <section className="pt-28 md:pt-32 pb-12 md:pb-20 px-4 md:px-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20">
         
         {/* --- LEFT: IMAGE GALLERY --- */}
-        <div className="relative">
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:grid md:grid-cols-1 md:gap-6 hide-scrollbar">
-            {product.images.map((img, index) => (
-              <div key={index} className="snap-center min-w-full md:min-w-0 relative aspect-square bg-gray-100 rounded-sm overflow-hidden">
-                <Image
-                  src={img}
-                  alt={product.title}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </div>
-            ))}
+        <div className="space-y-4">
+          <div className="relative aspect-[4/5] bg-gray-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm">
+            <Image
+              src={selectedImage}
+              alt={product.title}
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
-          {/* Mobile Dots */}
+          
           {product.images.length > 1 && (
-            <div className="flex justify-center gap-2 mt-4 md:hidden">
-              {product.images.map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 rounded-full bg-brand-black/20"></div>
+            <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 no-scrollbar">
+              {product.images.map((img: string, idx: number) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImage(img)}
+                  className={`relative w-16 h-20 md:w-20 md:h-24 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                    selectedImage === img ? "border-brand-gold" : "border-transparent opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <Image src={img} alt="Thumbnail" fill className="object-cover" />
+                </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* --- RIGHT: DETAILS --- */}
-        <div className="md:sticky md:top-32 h-fit">
-          <span className="text-xs font-sans font-bold tracking-[0.2em] text-brand-gold uppercase mb-2 block">
-            {product.category}
-          </span>
+        {/* --- RIGHT: PRODUCT DETAILS --- */}
+        <div className="flex flex-col justify-center">
           
-          <h1 className="font-serif text-3xl md:text-5xl text-brand-black mb-4">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-brand-gold uppercase">
+              {product.category}
+            </span>
+            <div className="flex items-center gap-1 text-brand-gold">
+              <Star className="w-4 h-4 fill-current" />
+              <span className="text-sm font-bold text-gray-900">4.9</span>
+              <span className="text-gray-400 text-xs ml-1">(128 Reviews)</span>
+            </div>
+          </div>
+
+          <h1 className="font-serif text-3xl md:text-5xl text-gray-900 mb-4 md:mb-6 leading-tight">
             {product.title}
           </h1>
 
-          <p className="font-sans text-xl font-medium text-gray-600 mb-6">
-            ₹{product.price.toLocaleString()}
-          </p>
+          <div className="text-2xl md:text-3xl font-serif text-gray-900 mb-6 md:mb-8 flex items-center">
+            <span className="mr-1">₹</span>{displayPrice}
+          </div>
 
-          {/* Render HTML Description Safely */}
           <div 
-            className="font-sans text-gray-600 leading-relaxed mb-8 text-sm md:text-base prose prose-sm"
-            dangerouslySetInnerHTML={{ __html: product.description }} 
+            className="prose prose-stone text-gray-600 font-sans mb-8 md:mb-10 leading-relaxed max-w-none text-sm md:text-base"
+            dangerouslySetInnerHTML={{ __html: product.description }}
           />
 
-          {/* Add to Cart Section */}
-          <div className="flex flex-col gap-4 mb-10 border-b border-gray-200 pb-10">
-            <div className="flex items-center mb-2">
-              <span className="text-xs font-bold uppercase tracking-widest mr-4">Quantity</span>
-              <div className="flex items-center border border-gray-300">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-gray-100"><Minus size={14} /></button>
-                <span className="w-8 text-center text-sm font-medium">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-gray-100"><Plus size={14} /></button>
-              </div>
+          {/* --- ACTIONS SECTION (SINGLE LINE FIXED) --- */}
+          <div className="flex flex-row gap-3 md:gap-4 border-t border-gray-200 pt-8">
+            
+            {/* Quantity Selector: 
+                - Compact on mobile (px-3 gap-3)
+                - Standard on desktop (md:px-6 md:gap-6)
+            */}
+            <div className="flex items-center bg-white border border-gray-300 rounded-full px-3 gap-3 md:px-6 md:gap-6 h-14 w-auto shrink-0">
+              <button 
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="text-gray-500 hover:text-black transition-colors p-1"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="font-bold text-lg w-4 text-center">{quantity}</span>
+              <button 
+                onClick={() => setQuantity(quantity + 1)}
+                className="text-gray-500 hover:text-black transition-colors p-1"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
 
-            <button 
+            {/* Add to Cart Button:
+                - flex-1 (Takes all remaining space)
+                - text-xs on mobile (prevents wrapping)
+            */}
+            <button
               onClick={handleAddToCart}
-              disabled={product.stockStatus !== 'IN_STOCK'}
-              className="w-full bg-brand-black text-white py-4 font-sans text-sm font-bold uppercase tracking-widest hover:bg-brand-gold transition-colors duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={product.stockStatus === 'OUT_OF_STOCK'}
+              className="flex-1 bg-[#1A1A1A] text-white h-14 min-h-[3.5rem] rounded-full flex items-center justify-center gap-2 md:gap-3 font-bold uppercase tracking-wider hover:bg-[#D4AF37] transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group whitespace-nowrap"
             >
-              {product.stockStatus === 'IN_STOCK' 
-                ? `Add to Cart — ₹${(product.price * quantity).toLocaleString()}` 
-                : 'Out of Stock'}
+              <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
+              <span className="text-xs md:text-base">
+                {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Add to Cart'}
+              </span>
             </button>
           </div>
 
-          {/* Accordions */}
-          <div className="flex flex-col gap-0">
-             <div className="border-b border-gray-200">
-                <button onClick={() => setActiveTab(activeTab === 'shipping' ? null : 'shipping')} className="w-full py-4 flex items-center justify-between text-left">
-                  <span className="font-serif text-lg text-brand-black">Shipping & Returns</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${activeTab === 'shipping' ? 'rotate-180' : ''}`} />
-                </button>
-                <div className={`overflow-hidden transition-all duration-300 ${activeTab === 'shipping' ? 'max-h-40 mb-4' : 'max-h-0'}`}>
-                  <p className="text-sm text-gray-500">Free shipping on orders over ₹999. Returns accepted within 7 days.</p>
-                </div>
+          {/* --- TRUST BADGES --- */}
+          <div className="grid grid-cols-3 gap-2 md:gap-4 mt-10 md:mt-12 pt-8 border-t border-gray-100">
+            <div className="text-center flex flex-col items-center">
+              <div className="text-brand-gold mb-3">
+                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
+              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
+                100% Organic
+              </span>
+            </div>
+
+            <div className="text-center border-l border-gray-100 flex flex-col items-center">
+              <div className="text-brand-gold mb-3">
+                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
+                Secure Pay
+              </span>
+            </div>
+
+            <div className="text-center border-l border-gray-100 flex flex-col items-center">
+              <div className="text-brand-gold mb-3">
+                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
+                Fast Ship
+              </span>
+            </div>
           </div>
+
         </div>
       </div>
-    </div>
+    </section>
   );
 }

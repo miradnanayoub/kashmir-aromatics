@@ -40,7 +40,6 @@ export default function ReviewForm({ productId }: { productId: number }) {
       if (!res.ok) throw new Error('Failed to submit');
 
       toast.success("Review submitted for approval!");
-      // Reset form
       setFormData({ name: '', email: '', comment: '' });
       setRating(0);
       
@@ -51,8 +50,9 @@ export default function ReviewForm({ productId }: { productId: number }) {
     }
   };
 
+  // FIX: Removed 'mt-12' from the className below
   return (
-    <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm mt-12 max-w-2xl">
+    <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm max-w-2xl w-full">
       <h3 className="text-xl font-serif font-bold text-gray-900 mb-6">Write a Review</h3>
       
       <form onSubmit={handleSubmit} className="space-y-5">

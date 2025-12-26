@@ -7,7 +7,7 @@ import { Star, User } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-// 1. QUERY (Removed 'rating' from reviews to prevent crash, but kept averageRating)
+// 1. QUERY
 const GET_PRODUCT = gql`
   query GetProduct($id: ID!) {
     product(id: $id, idType: DATABASE_ID) {
@@ -35,7 +35,6 @@ const GET_PRODUCT = gql`
           id
           date
           content
-          # rating <--- Removed to prevent "Cannot query field" error
           author {
             node {
               name
@@ -86,7 +85,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         id: r.id,
         author: r.author?.node?.name || "Anonymous",
         avatar: r.author?.node?.avatar?.url || "",
-        rating: 5, // Default for individual reviews until plugin update
+        rating: 5, 
         date: new Date(r.date).toLocaleDateString("en-IN", { 
           year: 'numeric', month: 'long', day: 'numeric' 
         }),
@@ -122,7 +121,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // Calculate stats for the Summary Section
   const averageRating = parseFloat(product.averageRating) || 0;
   const reviewCount = product.reviewCount || 0;
 
@@ -130,16 +128,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
       
-      {/* Product View (Ensure you update ProductView.tsx with the snippet above!) */}
       <ProductView product={product} />
 
-      <section className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-t border-gray-100">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+      {/* FIXED: Padding matches ProductView, items-start forces top alignment */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 border-t border-gray-100">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
           
-          {/* Reviews List Column */}
+          {/* Left Column: Reviews List */}
           <div className="lg:col-span-7 space-y-10">
             
-            {/* --- REVIEWS HEADER WITH STARS --- */}
             <div className="flex flex-col gap-2">
               <h2 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">
                 Customer Reviews
@@ -165,7 +163,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               )}
             </div>
 
-            {/* List of Reviews */}
             {reviews.length > 0 ? (
               <div className="space-y-8 mt-6">
                 {reviews.map((review) => (
@@ -184,7 +181,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                           <p className="text-xs text-gray-400">{review.date}</p>
                         </div>
                       </div>
-                      {/* Individual Review Stars (Currently defaulted to 5) */}
                       <div className="flex text-brand-gold">
                         {[...Array(5)].map((_, i) => (
                           <Star 
@@ -210,7 +206,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* Form Column */}
+          {/* Right Column: Form */}
           <div className="lg:col-span-5">
             <div className="sticky top-24">
               <ReviewForm productId={product.databaseId} />

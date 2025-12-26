@@ -1,11 +1,11 @@
 import Navbar from "@/components/Navbar";
 import FeaturedCollection from "@/components/FeaturedCollection";
 import Image from "next/image";
-import Link from "next/dist/client/link";
+import Link from "next/link"; // Fixed import path
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-brand-cream">
+    <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
       
       {/* HERO SECTION */}
@@ -13,10 +13,10 @@ export default function Home() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image 
-            src="https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2000&auto=format&fit=crop" // A moody, elegant floral image
+            src="https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2000&auto=format&fit=crop" 
             alt="Kashmir Valley"
             fill
-            className="object-cover brightness-[0.70]" // Darkens image for text readability
+            className="object-cover brightness-[0.70]" 
             priority
           />
         </div>
@@ -34,9 +34,13 @@ export default function Home() {
             Handcrafted essential oils, hydrosols, and botanical treasures from the heart of Kashmir.
           </p>
           
-          <button className="bg-white text-brand-black px-10 py-4 font-sans text-xs font-bold uppercase tracking-widest hover:bg-brand-gold hover:text-white transition-colors duration-300">
-            <Link href="/shop">Shop Now</Link>
-          </button>
+          {/* UPDATED BUTTON: Rounded Pill + Brand Colors */}
+          <Link 
+            href="/shop"
+            className="inline-block bg-brand-gold text-white px-10 py-4 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-brand-black transition-colors duration-300 shadow-lg"
+          >
+            Shop Now
+          </Link>
         </div>
       </section>
 

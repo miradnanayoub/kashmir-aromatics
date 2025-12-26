@@ -3,13 +3,17 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { Star, Minus, Plus, ShoppingBag } from "lucide-react";
+import { Star, Minus, Plus, ShoppingBag, ShieldCheck, Truck, Leaf } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ProductView({ product }: { product: any }) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
+
+  // --- Dynamic Data ---
+  const ratingValue = parseFloat(product.averageRating) || 0;
+  const reviewCount = product.reviewCount || 0;
 
   const displayPrice = product.price.toLocaleString('en-IN', {
     maximumFractionDigits: 0, 
@@ -31,12 +35,12 @@ export default function ProductView({ product }: { product: any }) {
   };
 
   return (
-    <section className="pt-28 md:pt-32 pb-12 md:pb-20 px-4 md:px-6 max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20">
+    <section className="pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 w-full">
         
         {/* --- LEFT: IMAGE GALLERY --- */}
-        <div className="space-y-4">
-          <div className="relative aspect-[4/5] bg-gray-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-sm">
+        <div className="flex flex-col gap-6">
+          <div className="relative aspect-[4/5] bg-[#F5F5F0] rounded-3xl overflow-hidden shadow-sm border border-white/50">
             <Image
               src={selectedImage}
               alt={product.title}
@@ -47,13 +51,15 @@ export default function ProductView({ product }: { product: any }) {
           </div>
           
           {product.images.length > 1 && (
-            <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar px-1">
               {product.images.map((img: string, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`relative w-16 h-20 md:w-20 md:h-24 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                    selectedImage === img ? "border-brand-gold" : "border-transparent opacity-70 hover:opacity-100"
+                  className={`relative w-20 h-24 flex-shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                    selectedImage === img 
+                      ? "border-brand-gold ring-1 ring-brand-gold/20 scale-105" 
+                      : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
                   }`}
                 >
                   <Image src={img} alt="Thumbnail" fill className="object-cover" />
@@ -64,104 +70,97 @@ export default function ProductView({ product }: { product: any }) {
         </div>
 
         {/* --- RIGHT: PRODUCT DETAILS --- */}
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col justify-center lg:pl-4">
           
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-brand-gold uppercase">
-              {product.category}
-            </span>
-            <div className="flex items-center gap-1 text-brand-gold">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="text-sm font-bold text-gray-900">4.9</span>
-              <span className="text-gray-400 text-xs ml-1">(128 Reviews)</span>
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold tracking-[0.2em] text-brand-gold uppercase bg-brand-gold/10 px-3 py-1 rounded-full">
+                {product.category}
+              </span>
+
+              {ratingValue > 0 && (
+                <div className="flex items-center gap-1.5 bg-white border border-gray-100 px-3 py-1 rounded-full shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-brand-gold text-brand-gold" />
+                  <span className="text-sm font-bold text-gray-900">{ratingValue.toFixed(1)}</span>
+                  <span className="text-xs text-gray-400 border-l border-gray-200 pl-1.5 ml-1">
+                    {reviewCount} Rev
+                  </span>
+                </div>
+              )}
             </div>
+
+            <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl text-gray-900 leading-[1.1] tracking-tight">
+              {product.title}
+            </h1>
           </div>
 
-          <h1 className="font-serif text-3xl md:text-5xl text-gray-900 mb-4 md:mb-6 leading-tight">
-            {product.title}
-          </h1>
+          <div className="mb-8 md:mb-10">
+            <div className="text-3xl md:text-4xl font-serif text-gray-900 mb-6 flex items-baseline gap-1">
+              <span className="text-lg text-gray-500 font-sans font-light">INR</span>
+              <span className="font-medium tracking-tight">₹{displayPrice}</span>
+            </div>
 
-          <div className="text-2xl md:text-3xl font-serif text-gray-900 mb-6 md:mb-8 flex items-center">
-            <span className="mr-1">₹</span>{displayPrice}
+            <div 
+              className="prose prose-stone prose-lg text-gray-600 font-sans leading-relaxed max-w-none text-base"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
           </div>
 
-          <div 
-            className="prose prose-stone text-gray-600 font-sans mb-8 md:mb-10 leading-relaxed max-w-none text-sm md:text-base"
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
-
-          {/* --- ACTIONS SECTION (SINGLE LINE FIXED) --- */}
-          <div className="flex flex-row gap-3 md:gap-4 border-t border-gray-200 pt-8">
+          {/* --- FIXED ACTIONS BAR (Mobile: Row Layout) --- */}
+          <div className="flex flex-row gap-3 sm:gap-4 border-t border-gray-100 pt-6 mt-auto w-full">
             
-            {/* Quantity Selector: 
-                - Compact on mobile (px-3 gap-3)
-                - Standard on desktop (md:px-6 md:gap-6)
-            */}
-            <div className="flex items-center bg-white border border-gray-300 rounded-full px-3 gap-3 md:px-6 md:gap-6 h-14 w-auto shrink-0">
+            {/* Quantity Selector: Compact Width on Mobile */}
+            <div className="flex items-center justify-between bg-white border border-gray-200 rounded-full px-2 sm:px-6 h-12 sm:h-14 w-28 sm:w-48 shadow-sm shrink-0">
               <button 
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="text-gray-500 hover:text-black transition-colors p-1"
+                className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors active:scale-90"
+                aria-label="Decrease quantity"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-              <span className="font-bold text-lg w-4 text-center">{quantity}</span>
+              <span className="font-mono font-medium text-base sm:text-lg text-gray-900 text-center select-none w-6">{quantity}</span>
               <button 
                 onClick={() => setQuantity(quantity + 1)}
-                className="text-gray-500 hover:text-black transition-colors p-1"
+                className="w-8 h-full flex items-center justify-center text-gray-400 hover:text-black transition-colors active:scale-90"
+                aria-label="Increase quantity"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            {/* Add to Cart Button:
-                - flex-1 (Takes all remaining space)
-                - text-xs on mobile (prevents wrapping)
-            */}
+            {/* Add to Cart Button: Takes remaining width */}
             <button
               onClick={handleAddToCart}
               disabled={product.stockStatus === 'OUT_OF_STOCK'}
-              className="flex-1 bg-[#1A1A1A] text-white h-14 min-h-[3.5rem] rounded-full flex items-center justify-center gap-2 md:gap-3 font-bold uppercase tracking-wider hover:bg-[#D4AF37] transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group whitespace-nowrap"
+              className="flex-1 bg-gray-900 text-white h-12 sm:h-14 rounded-full flex items-center justify-center gap-2 sm:gap-3 font-bold uppercase tracking-wider text-xs sm:text-sm hover:bg-brand-gold hover:text-white transition-all duration-300 shadow-xl shadow-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
             >
-              <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
-              <span className="text-xs md:text-base">
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="truncate">
                 {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Add to Cart'}
               </span>
             </button>
           </div>
 
-          {/* --- TRUST BADGES --- */}
-          <div className="grid grid-cols-3 gap-2 md:gap-4 mt-10 md:mt-12 pt-8 border-t border-gray-100">
-            <div className="text-center flex flex-col items-center">
-              <div className="text-brand-gold mb-3">
-                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <div className="grid grid-cols-3 gap-2 mt-8 pt-6 border-t border-dashed border-gray-200">
+            <div className="flex flex-col items-center gap-2 text-center group">
+              <div className="p-2.5 bg-green-50 rounded-full text-green-700 group-hover:bg-green-100 transition-colors">
+                <Leaf className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
-                100% Organic
-              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Organic</span>
             </div>
 
-            <div className="text-center border-l border-gray-100 flex flex-col items-center">
-              <div className="text-brand-gold mb-3">
-                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
+            <div className="flex flex-col items-center gap-2 text-center group">
+              <div className="p-2.5 bg-blue-50 rounded-full text-blue-700 group-hover:bg-blue-100 transition-colors">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
-                Secure Pay
-              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Secure</span>
             </div>
 
-            <div className="text-center border-l border-gray-100 flex flex-col items-center">
-              <div className="text-brand-gold mb-3">
-                <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-                </svg>
+            <div className="flex flex-col items-center gap-2 text-center group">
+              <div className="p-2.5 bg-amber-50 rounded-full text-amber-700 group-hover:bg-amber-100 transition-colors">
+                <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider text-gray-900">
-                Fast Ship
-              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Fast Ship</span>
             </div>
           </div>
 

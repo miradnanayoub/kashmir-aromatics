@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/context/CartContext"; // Connects the Cart Logic
-import CartDrawer from "@/components/CartDrawer";     // Connects the Sliding Sidebar
+import { CartProvider } from "@/context/CartContext";
+import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar"; // <--- 1. ADDED IMPORT HERE
 import NextTopLoader from 'nextjs-toploader';
-import { Toaster } from "react-hot-toast"; // <--- NEW IMPORT
+import { Toaster } from "react-hot-toast";
 
 // 1. Setup Montserrat (Body Text)
 const montserrat = Montserrat({
@@ -38,7 +39,7 @@ export default function RootLayout({
         className={`${montserrat.variable} ${playfair.variable} antialiased bg-[#FAFAF9] text-[#1A1A1A]`}
       >
         <NextTopLoader 
-          color="#d97706"   // This is your Amber-600 brand color
+          color="#d97706"
           initialPosition={0.08}
           crawlSpeed={200}
           height={3}
@@ -49,23 +50,22 @@ export default function RootLayout({
           shadow="0 0 10px #d97706,0 0 5px #d97706"
         />
         
-        {/* We wrap the whole app in CartProvider so the cart works on every page */}
         <CartProvider>
+          {/* --- 2. ADDED NAVBAR HERE --- */}
+          <Navbar /> 
+          
           {children}
           <Footer />
           <CartDrawer />
           
-          {/* --- NEW PREMIUM TOAST NOTIFICATIONS --- */}
           <Toaster 
             position="top-right"
             containerStyle={{
-              top: 80, // Keeps it below the navbar
+              top: 80,
               right: 20,
             }}
             toastOptions={{
-              // 1. THIS CLASS APPLIES THE SLIDE ANIMATION
               className: 'toast-slide-in', 
-              
               style: {
                 background: '#1A1A1A', 
                 color: '#fff',

@@ -2,28 +2,28 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-// 1. Define the Cart Item Type
-export type CartItem = {
-  id: string;          // GraphQL Global ID (e.g. "D4s...")
-  databaseId: number;  // WordPress Database ID (e.g. 3291) - CRITICAL for Checkout
+// 1. Define the shape of a Cart Item
+export interface CartItem {
+  id: string;        // Unique ID (can be databaseId + variation)
+  databaseId: number; // WordPress Database ID (Crucial for API)
   title: string;
   price: number;
   image: string;
   quantity: number;
   category: string;
-};
+}
 
-// 2. Define the Context Interface
+// 2. Define the Context Type
 interface CartContextType {
   items: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
-  updateQuantity: (id: string, delta: number) => void;
-  toggleCart: () => void;
-  isCartOpen: boolean;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void; // <--- NEW FUNCTION
   cartTotal: number;
   cartCount: number;
-  checkout: () => void; 
+  isCartOpen: boolean;
+  toggleCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,56 +31,51 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
-  // Load Cart from LocalStorage on mount
+  // Load cart from localStorage on mount
   useEffect(() => {
-    setIsMounted(true);
     const savedCart = localStorage.getItem("kashmir-cart");
     if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error("Failed to parse cart data", error);
-      }
+      setItems(JSON.parse(savedCart));
     }
   }, []);
 
-  // Save Cart to LocalStorage whenever it changes
+  // Save cart to localStorage whenever items change
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem("kashmir-cart", JSON.stringify(items));
-    }
-  }, [items, isMounted]);
+    localStorage.setItem("kashmir-cart", JSON.stringify(items));
+  }, [items]);
 
   const addItem = (newItem: CartItem) => {
-    setItems((prev) => {
-      const existing = prev.find((i) => i.id === newItem.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.id === newItem.id ? { ...i, quantity: i.quantity + newItem.quantity } : i
+    setItems((currentItems) => {
+      const existingItem = currentItems.find((item) => item.id === newItem.id);
+      if (existingItem) {
+        return currentItems.map((item) =>
+          item.id === newItem.id
+            ? { ...item, quantity: item.quantity + newItem.quantity }
+            : item
         );
       }
-      return [...prev, newItem];
+      return [...currentItems, newItem];
     });
-    
-    // --- FIX: REMOVED THE AUTO-OPEN COMMAND ---
-    // setIsCartOpen(true);  <-- This line is now gone.
+    setIsCartOpen(true);
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
   };
 
-  const updateQuantity = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          return { ...item, quantity: Math.max(1, item.quantity + delta) };
-        }
-        return item;
-      })
+  const updateQuantity = (id: string, quantity: number) => {
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
+      )
     );
+  };
+
+  // --- NEW: Clear Cart Function ---
+  const clearCart = () => {
+    setItems([]);
+    localStorage.removeItem("kashmir-cart");
   };
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
@@ -88,48 +83,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartTotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
   const cartCount = items.reduce((count, item) => count + item.quantity, 0);
 
-  // --- CHECKOUT LOGIC ---
-  const checkout = () => {
-        if (items.length === 0) {
-      alert("Your cart is empty.");
-      return;
-    }
-
-    // Filter items to ensure they have the databaseId needed for WordPress
-    const validItems = items.filter(item => item.databaseId);
-    
-    if (validItems.length === 0) {
-      alert("Error: Items are missing their Product ID. Please clear the cart and add items again.");
-      console.error("Error: No items have a valid databaseId. Check product mapping.");
-      return;
-    }
-
-    // Construct the parameter string: "ID:QTY,ID:QTY"
-    const cartString = validItems
-      .map((item) => `${item.databaseId}:${item.quantity}`)
-      .join(",");
-
-    // The destination URL
-    const url = `https://kashmiraromatics.in/?headless_cart=${cartString}`;
-    
-    console.log("Redirecting to:", url);
-    
-    // Perform the redirect
-    window.location.href = url;
-  };
-
   return (
     <CartContext.Provider
-      value={{ 
-        items, 
-        addItem, 
-        removeItem, 
-        updateQuantity, 
-        toggleCart, 
-        isCartOpen, 
-        cartTotal, 
-        cartCount, 
-        checkout 
+      value={{
+        items,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart, // <--- Exported here
+        cartTotal,
+        cartCount,
+        isCartOpen,
+        toggleCart,
       }}
     >
       {children}
@@ -139,6 +104,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) throw new Error("useCart must be used within a CartProvider");
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
   return context;
 }

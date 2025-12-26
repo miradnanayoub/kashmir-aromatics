@@ -53,7 +53,7 @@ export default function TrackOrderPage() {
 
   return (
     <main className="bg-[#FAFAF9] min-h-screen">
-      <Navbar />
+      
 
       <section className="pt-40 pb-20 px-6 max-w-3xl mx-auto">
         <div className="text-center mb-12">

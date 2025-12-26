@@ -12,8 +12,7 @@ import { Mountain, FlaskConical, Users, ArrowRight } from "lucide-react";
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#FAFAF9]">
-      <Navbar />
-      
+            
       {/* 1. HERO SECTION */}
       <section className="relative h-[90vh] w-full flex items-center justify-center overflow-hidden">
         {/* Background Image - Added 'animate-slow-zoom' */}

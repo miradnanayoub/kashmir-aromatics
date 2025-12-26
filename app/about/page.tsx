@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function AboutPage() {
   return (
     <main className="bg-brand-cream min-h-screen">
-      <Navbar />
+      
       
       {/* Hero Section */}
       <section className="relative h-[60vh] flex items-center justify-center">

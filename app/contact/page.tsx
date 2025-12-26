@@ -42,8 +42,7 @@ export default function ContactPage() {
 
   return (
     <main className="bg-[#FAFAF9] min-h-screen">
-      <Navbar />
-      
+            
       <section className="pt-40 pb-20 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
           

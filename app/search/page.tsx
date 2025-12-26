@@ -31,8 +31,7 @@ export default async function SearchPage({
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <Navbar />
-
+      
       <div className="bg-white pt-32 pb-8 px-6 border-b border-gray-100">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-serif text-gray-900">

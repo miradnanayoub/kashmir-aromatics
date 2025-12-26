@@ -1,80 +1,123 @@
 "use client";
 
-import Image from "next/image";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation"; // Import Router
 
 export default function CartDrawer() {
-  // Get checkout function
-  const { isCartOpen, toggleCart, items, removeItem, updateQuantity, cartTotal, checkout } = useCart();
+  const { 
+    isCartOpen, 
+    toggleCart, 
+    items, 
+    removeItem, 
+    updateQuantity, 
+    cartTotal 
+  } = useCart(); // Removed 'checkout' from here
 
-  // DEBUG: Prove it rendered
-  console.log("DRAWER RENDERED. Checkout fn:", !!checkout);
+  const router = useRouter(); // Initialize Router
 
   if (!isCartOpen) return null;
 
+  const handleCheckout = () => {
+    toggleCart(); // Close the drawer first
+    router.push("/checkout"); // Navigate to the new page
+  };
+
   return (
-    <div className="relative z-[200]"> 
-      {/* 1. The Dark Backdrop (z-index 40) */}
+    <>
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
-        onClick={toggleCart} // Clicking background closes drawer
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity"
+        onClick={toggleCart}
       />
 
-      {/* 2. The Drawer Panel (z-index 50 - HIGHER than backdrop) */}
-      <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-brand-cream shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out">
+      {/* Drawer */}
+      <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-[101] shadow-2xl flex flex-col transform transition-transform duration-300 ease-out">
         
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-6 border-b border-brand-black/10">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-serif text-2xl text-brand-black flex items-center gap-2">
-            Your Cart <span className="text-sm font-sans text-gray-500">({items.length})</span>
+            <ShoppingBag className="w-5 h-5" />
+            Your Bag ({items.length})
           </h2>
           <button 
             onClick={toggleCart}
-            className="p-2 hover:bg-black/5 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X size={24} className="text-brand-black" />
+            <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
 
-        {/* ITEMS LIST */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        {/* Cart Items */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
           {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-gray-400">
-              <ShoppingBag size={48} className="opacity-20" />
-              <p>Your cart is empty.</p>
-              <button onClick={toggleCart} className="text-brand-black underline text-sm font-bold tracking-widest uppercase">
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+              <ShoppingBag className="w-12 h-12 text-gray-200" />
+              <p className="text-gray-400 font-sans">Your bag is empty.</p>
+              <button 
+                onClick={toggleCart}
+                className="text-brand-gold font-bold uppercase tracking-widest text-xs border-b border-brand-gold pb-1 hover:text-black hover:border-black transition-colors"
+              >
                 Continue Shopping
               </button>
             </div>
           ) : (
-            items.map((item, index) => (
-              <div key={`${item.id}-${index}`} className="flex gap-4">
-                  <div className="relative w-24 h-32 bg-gray-100 shrink-0">
+            items.map((item) => (
+              <div key={item.id} className="flex gap-4 animate-fade-in-up">
+                {/* Image */}
+                <div className="relative w-20 h-24 bg-gray-50 rounded-lg overflow-hidden shrink-0 border border-gray-100">
                   <Image 
-                  src={item.image} 
-                  alt={item.title} 
-                  fill 
-                  className="object-cover" 
+                    src={item.image} 
+                    alt={item.title} 
+                    fill 
+                    className="object-cover"
                   />
-              </div>
-                <div className="flex-1 flex flex-col justify-between">
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 flex flex-col justify-between py-1">
                   <div>
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-serif text-lg text-brand-black leading-tight">{item.title}</h3>
-                      <button onClick={() => removeItem(item.id)} className="text-gray-400 hover:text-red-500">
-                        <X size={16} />
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-serif text-gray-900 leading-tight pr-4">
+                        {item.title}
+                      </h3>
+                      <button 
+                        onClick={() => removeItem(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <p className="text-xs text-brand-gold font-bold tracking-widest uppercase">{item.category}</p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
+                      {item.category}
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center border border-gray-300">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-gray-100"><Minus size={12} /></button>
-                      <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-gray-100"><Plus size={12} /></button>
+
+                  <div className="flex items-center justify-between mt-2">
+                    {/* Quantity Control */}
+                    <div className="flex items-center border border-gray-200 rounded-full px-2 py-1 gap-3">
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="p-1 hover:text-brand-gold transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-xs font-bold w-3 text-center">
+                        {item.quantity}
+                      </span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="p-1 hover:text-brand-gold transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
-                    <p className="font-medium text-brand-black">₹{(item.price * item.quantity).toLocaleString()}</p>
+
+                    {/* Price */}
+                    <span className="font-bold text-gray-900">
+                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -82,29 +125,29 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* FOOTER */}
+        {/* Footer */}
         {items.length > 0 && (
-          <div className="p-6 bg-white border-t border-brand-black/10">
+          <div className="p-6 border-t border-gray-100 bg-[#FAFAF9]">
             <div className="flex justify-between items-center mb-6">
               <span className="text-sm font-bold uppercase tracking-widest text-gray-500">Subtotal</span>
-              <span className="font-serif text-2xl text-brand-black">₹{cartTotal.toLocaleString()}</span>
+              <span className="font-serif text-2xl text-gray-900">
+                ₹{cartTotal.toLocaleString("en-IN")}
+              </span>
             </div>
-            <p className="text-xs text-gray-400 mb-4 text-center">Shipping & taxes calculated at checkout.</p>
+            <p className="text-xs text-center text-gray-400 mb-4">
+              Shipping & taxes calculated at checkout.
+            </p>
             
-            {/* --- THE CHECKOUT BUTTON --- */}
-            <button 
-              onClick={() => {
-                // Direct Inline Debug
-                console.log("Button CLICKED!"); 
-                checkout();
-              }}
-              className="w-full bg-brand-black text-white py-4 font-sans text-sm font-bold uppercase tracking-widest hover:bg-brand-gold transition-colors duration-300 shadow-lg relative z-[60]"
+            {/* UPDATED BUTTON */}
+            <button
+              onClick={handleCheckout}
+              className="w-full bg-[#1A1A1A] text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D4AF37] transition-all duration-300 shadow-lg"
             >
-              Checkout
+              Proceed to Checkout
             </button>
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

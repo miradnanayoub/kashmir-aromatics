@@ -69,7 +69,7 @@ export default async function CategoryPage({
         {products.length > 0 ? (
           
           /* Using the exact same Grid classes as the Shop Page */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-4 md:gap-y-4">
             {products.map((product: any) => (
               <ProductCard key={product.databaseId} product={product} />
             ))}

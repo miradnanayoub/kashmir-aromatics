@@ -40,7 +40,7 @@ export default function ProductCard({ product }: { product: any }) {
 
   return (
     <div className="group relative block h-full">
-      <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-2 md:p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 h-full flex flex-col relative">
+      <div className="bg-white rounded-[0.8rem] md:rounded-[1.6rem] p-2 md:p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 h-full flex flex-col relative">
         
         <Link 
           href={`/product/${product.databaseId}`} 

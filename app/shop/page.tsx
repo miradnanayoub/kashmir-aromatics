@@ -74,7 +74,7 @@ export default async function ShopPage({
           </div>
         ) : (
           /* --- UPDATED GRID WITH NEW CARD COMPONENT --- */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-6 md:gap-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-4 md:gap-y-4">
             {products.map((product: any) => (
               <ProductCard key={product.databaseId} product={product} />
             ))}

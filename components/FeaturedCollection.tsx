@@ -70,7 +70,7 @@ export default async function FeaturedCollection() {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 md:gap-x-8 md:gap-y-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-3 md:gap-x-4 md:gap-y-4">
           {products.map((node: any) => (
             // FIX: Pass the raw 'node' as the 'product' prop
             <ProductCard key={node.databaseId} product={node} />

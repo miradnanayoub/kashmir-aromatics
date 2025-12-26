@@ -21,6 +21,8 @@ export const GET_ALL_PRODUCTS = gql`
         databaseId
         name
         slug
+        averageRating
+        reviewCount
         image {
           sourceUrl
           altText
@@ -59,6 +61,8 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
         databaseId
         name
         slug
+        averageRating
+        reviewCount
         image {
           sourceUrl
           altText
@@ -94,6 +98,8 @@ export const GET_CATEGORY_BY_SLUG = gql`
           databaseId
           name
           slug
+          averageRating
+          reviewCount
           image {
             sourceUrl
             altText
@@ -124,6 +130,8 @@ export const GET_SEARCH_RESULTS = gql`
         databaseId
         name
         slug
+        averageRating
+        reviewCount
         image {
           sourceUrl
           altText

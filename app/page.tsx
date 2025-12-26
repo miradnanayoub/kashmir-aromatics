@@ -37,7 +37,7 @@ export default function Home() {
           {/* UPDATED BUTTON: Rounded Pill + Brand Colors */}
           <Link 
             href="/shop"
-            className="inline-block bg-brand-gold text-white px-10 py-4 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-brand-black transition-colors duration-300 shadow-lg"
+            className="inline-block bg-brand-gold text-white px-10 py-4 rounded-full font-sans text-xs font-bold uppercase tracking-widest hover:bg-brand-black transition-colors duration-300 shadow-lg"
           >
             Shop Now
           </Link>

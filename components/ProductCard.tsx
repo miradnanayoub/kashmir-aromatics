@@ -90,7 +90,7 @@ export default function ProductCard({ product }: { product: any }) {
 
             <button
               onClick={handleAddToCart}
-              className="relative z-20 bg-brand-gold text-white p-2.5 md:px-6 md:py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-black transition-colors shadow-lg group/btn shrink-0"
+              className="relative z-20 bg-brand-black text-white p-2.5 md:px-6 md:py-3 rounded-full flex items-center justify-center gap-2 hover:bg-brand-gold transition-colors shadow-lg group/btn shrink-0"
               aria-label="Add to cart"
             >
               <ShoppingCart className="w-4 h-4" />

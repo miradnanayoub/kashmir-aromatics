@@ -9,7 +9,6 @@ export default function Footer() {
         
         {/* Column 1: Brand & Logo */}
         <div className="space-y-6">
-          {/* Logo Replaces Text Title */}
           <div className="relative w-40 h-12">
             <Image 
               src="/logo-white.png" 
@@ -37,7 +36,6 @@ export default function Footer() {
             <li><Link href="/shop/hydrosols" className="hover:text-white transition">Hydrosols</Link></li>
             <li><Link href="/shop/perfumes" className="hover:text-white transition">Perfumes</Link></li>
             <li><Link href="/shop/gift-sets" className="hover:text-white transition">Gift Sets</Link></li>
-            {/* Added Track Order Link */}
             <li><Link href="/track-order" className="hover:text-white transition">Track Order</Link></li>
           </ul>
         </div>
@@ -70,10 +68,21 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Copyright */}
+      {/* Copyright & Credits */}
       <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs text-white/40">
         <p>&copy; {new Date().getFullYear()} Kashmir Aromatics. All rights reserved.</p>
-        <p>Designed by You.</p>
+        
+        <p>
+          Designed by{' '}
+          <a 
+            href="https://www.linkedin.com/in/miradnanayoub" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-white/60 hover:text-brand-gold transition-colors duration-200 underline underline-offset-4"
+          >
+            Adnan Mir
+          </a>
+        </p>
       </div>
     </footer>
   );

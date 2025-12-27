@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// --- REUSABLE INPUT COMPONENT (Updated with Error Handling) ---
+// --- REUSABLE INPUT COMPONENT ---
 const InputField = ({ 
   name, 
   label, 
@@ -19,12 +19,12 @@ const InputField = ({
   icon = null,
   value,
   onChange,
-  onBlur, // New: Handle blur event
-  error,  // New: Show error message
+  onBlur,
+  error,
   inputMode = "text", 
   maxLength
 }: any) => (
-  <div className={`relative ${className} mb-4`}> {/* Added mb-4 for error space */}
+  <div className={`relative ${className} mb-4`}>
     <input
       required={required}
       type={type}
@@ -34,7 +34,7 @@ const InputField = ({
       readOnly={readOnly}
       placeholder=" "
       onChange={onChange}
-      onBlur={onBlur} // Trigger validation on leave
+      onBlur={onBlur}
       inputMode={inputMode as any}
       maxLength={maxLength}
       className={`peer w-full px-4 pt-6 pb-2 bg-white border rounded-xl focus:outline-none focus:ring-2 transition-all placeholder-transparent
@@ -56,15 +56,13 @@ const InputField = ({
                  }
       `}
     >
-      {label} {required && <span className={error ? "text-red-500" : "text-red-500"}>*</span>}
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     
-    {/* Icon or Error Icon */}
     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
       {error ? <AlertCircle className="w-5 h-5 text-red-500" /> : icon}
     </div>
 
-    {/* Error Message Text */}
     {error && (
       <span className="absolute -bottom-5 left-4 text-[10px] text-red-500 font-medium animate-fade-in-up">
         {error}
@@ -82,7 +80,6 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [saveInfo, setSaveInfo] = useState(false);
 
-  // Form State
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -94,7 +91,6 @@ export default function CheckoutPage() {
     phone: "",
   });
 
-  // Error State
   const [errors, setErrors] = useState({
     email: "",
     phone: "",
@@ -107,6 +103,17 @@ export default function CheckoutPage() {
       setSaveInfo(true);
     }
   }, []);
+
+  // --- RAZORPAY SCRIPT LOADER ---
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handlePinCodeLookup = async (pincode: string) => {
     if (pincode.length !== 6) return;
@@ -134,7 +141,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // --- NEW: Handle Blur (Validation) ---
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
@@ -155,12 +161,10 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // Clear errors immediately when user starts typing to fix it
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    // Logic
     if (name === "phone") {
       if (!/^\d*$/.test(value) || value.length > 10) return;
     }
@@ -173,11 +177,12 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // --- MAIN SUBMIT HANDLER ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Final Validation Check
+    // Validation
     if (formData.phone.length !== 10) {
       setErrors((prev) => ({ ...prev, phone: "10-digit number required" }));
       toast.error("Please fix the phone number");
@@ -190,21 +195,83 @@ export default function CheckoutPage() {
       setLoading(false);
       return;
     }
-
     if (items.length === 0) {
       toast.error("Your cart is empty");
       setLoading(false);
       return;
     }
 
+    // Save Info Logic
     if (saveInfo) {
       localStorage.setItem("checkout_info", JSON.stringify(formData));
     } else {
       localStorage.removeItem("checkout_info");
     }
 
+    // --- PAYMENT FLOW ---
+    if (paymentMethod === "razorpay") {
+      // 1. Load Script
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded) {
+        toast.error("Razorpay SDK failed to load");
+        setLoading(false);
+        return;
+      }
+
+      // 2. Create Order on Backend
+      try {
+        const orderRes = await fetch("/api/razorpay", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: cartTotal }),
+        });
+        const orderData = await orderRes.json();
+
+        if (!orderRes.ok) throw new Error("Failed to create Razorpay order");
+
+        // 3. Open Razorpay Popup
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "Kashmir Aromatics",
+          description: "Premium Essential Oils",
+          // image: "/logo.png", // Add your logo URL here if you have one
+          order_id: orderData.id,
+          handler: async function (response: any) {
+             // Payment Success! Now place order in your system
+             await placeOrder(response); 
+          },
+          prefill: {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            contact: formData.phone,
+          },
+          theme: {
+            color: "#D4AF37", // Brand Gold
+          },
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+        setLoading(false); // Stop internal loader, let Razorpay UI take over
+      } catch (err) {
+        console.error(err);
+        toast.error("Payment initiation failed");
+        setLoading(false);
+      }
+    } else {
+      // COD Flow
+      await placeOrder({});
+    }
+  };
+
+  // --- FINAL ORDER PLACEMENT (Database/WooCommerce) ---
+  const placeOrder = async (paymentDetails: any = {}) => {
+    setLoading(true);
     const orderData = {
       payment_method: paymentMethod,
+      payment_result: paymentDetails, // Contains razporpay_payment_id if online
       billing: {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -232,7 +299,7 @@ export default function CheckoutPage() {
       const result = await res.json();
 
       if (result.success) {
-        toast.success(`Order #${result.orderId} Placed!`);
+        toast.success(`Order #${result.orderId} Placed Successfully!`);
         router.push(`/order-confirmation?orderId=${result.orderId}`);
       } else {
         toast.error("Failed to place order. Please try again.");
@@ -250,8 +317,6 @@ export default function CheckoutPage() {
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-        
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 border-b border-gray-200 pb-6">
           <h1 className="font-serif text-3xl md:text-4xl text-gray-900">Checkout</h1>
           <div className="flex items-center gap-2 text-sm text-gray-500 mt-2 md:mt-0">
@@ -262,107 +327,28 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           
-          {/* --- LEFT: FORMS --- */}
           <div className="lg:col-span-7 space-y-10">
-            
-            {/* Step 1: Shipping */}
             <section>
               <h2 className="text-xl font-serif mb-6 flex items-center gap-3">
                 <span className="w-8 h-8 rounded-full bg-brand-black text-white text-sm flex items-center justify-center font-bold">1</span>
                 Shipping Details
               </h2>
-
               <form id="checkout-form" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField 
-                  name="firstName" 
-                  label="First Name" 
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                />
-                <InputField 
-                  name="lastName" 
-                  label="Last Name" 
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                />
-                
-                {/* Email with Validation */}
-                <InputField 
-                  name="email" 
-                  label="Email Address" 
-                  type="email" 
-                  className="md:col-span-2" 
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  error={errors.email}
-                />
-                
-                {/* Phone with Validation */}
-                <InputField 
-                  name="phone" 
-                  label="Phone Number" 
-                  type="tel" 
-                  inputMode="numeric"
-                  maxLength={10}
-                  className="md:col-span-2" 
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  error={errors.phone}
-                />
-                
-                <InputField 
-                  name="address1" 
-                  label="Street Address" 
-                  className="md:col-span-2" 
-                  value={formData.address1}
-                  onChange={handleInputChange}
-                />
-                
-                <InputField 
-                  name="postcode" 
-                  label="Pincode" 
-                  inputMode="numeric" 
-                  maxLength={6}
-                  value={formData.postcode}
-                  onChange={handleInputChange}
-                  icon={pinLoading ? <Loader2 className="w-4 h-4 animate-spin text-brand-gold" /> : <MapPin className="w-4 h-4" />}
-                />
-                
-                <InputField 
-                  name="city" 
-                  label="City" 
-                  readOnly 
-                  value={formData.city}
-                  onChange={handleInputChange}
-                /> 
-                <InputField 
-                  name="state" 
-                  label="State" 
-                  readOnly 
-                  className="md:col-span-2" 
-                  value={formData.state}
-                  onChange={handleInputChange}
-                />
+                <InputField name="firstName" label="First Name" value={formData.firstName} onChange={handleInputChange} />
+                <InputField name="lastName" label="Last Name" value={formData.lastName} onChange={handleInputChange} />
+                <InputField name="email" label="Email Address" type="email" className="md:col-span-2" value={formData.email} onChange={handleInputChange} onBlur={handleBlur} error={errors.email} />
+                <InputField name="phone" label="Phone Number" type="tel" inputMode="numeric" maxLength={10} className="md:col-span-2" value={formData.phone} onChange={handleInputChange} onBlur={handleBlur} error={errors.phone} />
+                <InputField name="address1" label="Street Address" className="md:col-span-2" value={formData.address1} onChange={handleInputChange} />
+                <InputField name="postcode" label="Pincode" inputMode="numeric" maxLength={6} value={formData.postcode} onChange={handleInputChange} icon={pinLoading ? <Loader2 className="w-4 h-4 animate-spin text-brand-gold" /> : <MapPin className="w-4 h-4" />} />
+                <InputField name="city" label="City" readOnly value={formData.city} onChange={handleInputChange} /> 
+                <InputField name="state" label="State" readOnly className="md:col-span-2" value={formData.state} onChange={handleInputChange} />
               </form>
-
-              {/* Save Info Checkbox */}
               <div className="mt-4 flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id="saveInfo"
-                  checked={saveInfo}
-                  onChange={(e) => setSaveInfo(e.target.checked)}
-                  className="w-4 h-4 text-brand-gold border-gray-300 rounded focus:ring-brand-gold"
-                />
-                <label htmlFor="saveInfo" className="text-sm text-gray-600 select-none cursor-pointer">
-                  Save my information for a faster checkout next time
-                </label>
+                <input type="checkbox" id="saveInfo" checked={saveInfo} onChange={(e) => setSaveInfo(e.target.checked)} className="w-4 h-4 text-brand-gold border-gray-300 rounded focus:ring-brand-gold" />
+                <label htmlFor="saveInfo" className="text-sm text-gray-600 select-none cursor-pointer">Save my information for a faster checkout next time</label>
               </div>
             </section>
 
-            {/* Step 2: Payment */}
             <section>
               <h2 className="text-xl font-serif mb-6 flex items-center gap-3">
                 <span className="w-8 h-8 rounded-full bg-brand-black text-white text-sm flex items-center justify-center font-bold">2</span>
@@ -370,6 +356,7 @@ export default function CheckoutPage() {
               </h2>
               
               <div className="grid grid-cols-1 gap-4">
+                {/* Cash on Delivery */}
                 <div 
                   onClick={() => setPaymentMethod("cod")}
                   className={`relative p-6 border rounded-2xl cursor-pointer flex items-center gap-5 transition-all duration-200 ${
@@ -381,7 +368,6 @@ export default function CheckoutPage() {
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'cod' ? 'border-brand-gold' : 'border-gray-300'}`}>
                     {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-brand-gold" />}
                   </div>
-                  
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Banknote className="w-5 h-5 text-gray-700" />
@@ -391,22 +377,34 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="relative p-6 border border-gray-100 rounded-2xl flex items-center gap-5 opacity-60 cursor-not-allowed bg-gray-50">
-                   <div className="w-5 h-5 rounded-full border-2 border-gray-200" />
-                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CreditCard className="w-5 h-5 text-gray-400" />
-                      <span className="font-bold text-gray-400">Online Payment</span>
-                    </div>
-                    <p className="text-sm text-gray-400">Temporarily unavailable.</p>
+                {/* ONLINE PAYMENT (ENABLED) */}
+                <div 
+                  onClick={() => setPaymentMethod("razorpay")}
+                  className={`relative p-6 border rounded-2xl cursor-pointer flex items-center gap-5 transition-all duration-200 ${
+                    paymentMethod === 'razorpay' 
+                      ? 'border-brand-gold bg-amber-50/30 ring-1 ring-brand-gold/20 shadow-sm' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'razorpay' ? 'border-brand-gold' : 'border-gray-300'}`}>
+                    {paymentMethod === 'razorpay' && <div className="w-2.5 h-2.5 rounded-full bg-brand-gold" />}
                   </div>
-                  <span className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-widest bg-gray-200 text-gray-500 px-2 py-1 rounded">Soon</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CreditCard className="w-5 h-5 text-brand-black" />
+                      <span className="font-bold text-gray-900">Online Payment</span>
+                    </div>
+                    <p className="text-sm text-gray-500">Credit/Debit Card, UPI, Netbanking (via Razorpay)</p>
+                  </div>
+                  {/* Trust Badges */}
+                  <div className="absolute top-6 right-6 flex gap-2 opacity-60 grayscale hover:grayscale-0 transition-all">
+                    {/* Add small icons here if you want */}
+                  </div>
                 </div>
               </div>
             </section>
           </div>
 
-          {/* --- RIGHT: ORDER SUMMARY --- */}
           <div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40">
               <h3 className="font-serif text-2xl mb-6">Order Summary</h3>
@@ -415,22 +413,15 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 items-center group">
                     <div className="relative w-16 h-16 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                      <Image 
-                        src={item.image} 
-                        alt={item.title} 
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute top-0 right-0 bg-brand-black/90 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-bl-lg font-bold">
                         {item.quantity}
                       </div>
                     </div>
-                    
                     <div className="flex-1 min-w-0">
                       <h4 className="font-serif text-sm text-gray-900 truncate pr-2">{item.title}</h4>
                       <p className="text-xs text-gray-500 uppercase tracking-wide">{item.category}</p>
                     </div>
-                    
                     <div className="font-bold text-sm whitespace-nowrap">
                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                     </div>
@@ -468,14 +459,12 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    Place Order
+                    {paymentMethod === 'cod' ? 'Place Order' : 'Pay Now'}
                   </>
                 )}
               </button>
-              
             </div>
           </div>
-
         </div>
       </div>
     </main>

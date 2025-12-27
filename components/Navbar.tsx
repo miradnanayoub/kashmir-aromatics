@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation"; // Added usePathname
-import { ShoppingBag, Search, Menu, X, Loader2 } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import { client } from "@/lib/apolloClient"; 
@@ -242,7 +242,7 @@ export default function Navbar() {
             </button>
             
             <button onClick={toggleCart} className="relative hover:text-amber-500 transition-colors">
-              <ShoppingBag className="w-5 h-5" />
+              <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-amber-600 text-white text-[9px] w-3.5 h-3.5 flex items-center justify-center rounded-full font-sans">
                   {cartCount}

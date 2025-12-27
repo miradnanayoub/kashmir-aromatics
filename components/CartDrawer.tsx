@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation"; // Import Router
 
@@ -38,8 +38,8 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-serif text-2xl text-brand-black flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5" />
-            Your Bag ({items.length})
+            <ShoppingCart className="w-5 h-5" />
+            Your Cart ({items.length})
           </h2>
           <button 
             onClick={toggleCart}

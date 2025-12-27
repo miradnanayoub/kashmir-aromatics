@@ -72,7 +72,8 @@ const InputField = ({
 );
 
 export default function CheckoutPage() {
-  const { items, cartTotal } = useCart();
+  // 1. UPDATED: Get clearCart function
+  const { items, cartTotal, clearCart } = useCart();
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
@@ -236,7 +237,6 @@ export default function CheckoutPage() {
           currency: orderData.currency,
           name: "Kashmir Aromatics",
           description: "Premium Essential Oils",
-          // image: "/logo.png", // Add your logo URL here if you have one
           order_id: orderData.id,
           handler: async function (response: any) {
              // Payment Success! Now place order in your system
@@ -300,6 +300,10 @@ export default function CheckoutPage() {
 
       if (result.success) {
         toast.success(`Order #${result.orderId} Placed Successfully!`);
+        
+        // 2. UPDATED: Clear the cart on success
+        clearCart();
+        
         router.push(`/order-confirmation?orderId=${result.orderId}&email=${formData.email}&paymentMethod=${paymentMethod}`);
       } else {
         toast.error("Failed to place order. Please try again.");
@@ -377,7 +381,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* ONLINE PAYMENT (ENABLED) */}
+                {/* ONLINE PAYMENT */}
                 <div 
                   onClick={() => setPaymentMethod("razorpay")}
                   className={`relative p-6 border rounded-2xl cursor-pointer flex items-center gap-5 transition-all duration-200 ${
@@ -396,9 +400,7 @@ export default function CheckoutPage() {
                     </div>
                     <p className="text-sm text-gray-500">Credit/Debit Card, UPI, Netbanking (via Razorpay)</p>
                   </div>
-                  {/* Trust Badges */}
                   <div className="absolute top-6 right-6 flex gap-2 opacity-60 grayscale hover:grayscale-0 transition-all">
-                    {/* Add small icons here if you want */}
                   </div>
                 </div>
               </div>

@@ -300,7 +300,7 @@ export default function CheckoutPage() {
 
       if (result.success) {
         toast.success(`Order #${result.orderId} Placed Successfully!`);
-        router.push(`/order-confirmation?orderId=${result.orderId}`);
+        router.push(`/order-confirmation?orderId=${result.orderId}&email=${formData.email}&paymentMethod=${paymentMethod}`);
       } else {
         toast.error("Failed to place order. Please try again.");
       }

@@ -13,6 +13,8 @@
     "@woocommerce/woocommerce-rest-api": "^1.0.2",
     "clsx": "^2.1.1",
     "graphql": "^16.12.0",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
     "nextjs-toploader": "^3.9.17",

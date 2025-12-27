@@ -56,3 +56,36 @@ html {
   /* We use !important to override the library's default "Pop" animation */
   animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
+
+/* --- PREMIUM ANIMATIONS --- */
+
+/* 1. Slow Zoom for Hero Background */
+@keyframes slowZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+.animate-slow-zoom {
+  animation: slowZoom 20s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite alternate;
+}
+
+/* 2. Fade In Up (for Hero Text) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0; /* Start hidden */
+  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Delays for staggering text */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }

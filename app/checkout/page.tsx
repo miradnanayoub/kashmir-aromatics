@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/context/CartContext";
-import { Loader2, CheckCircle, CreditCard, Banknote, ShieldCheck, Lock, MapPin } from "lucide-react";
+import { Loader2, CheckCircle, CreditCard, Banknote, ShieldCheck, Lock, MapPin, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// --- FIXED: Component Defined OUTSIDE to prevent focus loss ---
+// --- REUSABLE INPUT COMPONENT (Updated with Error Handling) ---
 const InputField = ({ 
   name, 
   label, 
@@ -19,10 +19,12 @@ const InputField = ({
   icon = null,
   value,
   onChange,
-  inputMode = "text", // New Prop for Numpad
+  onBlur, // New: Handle blur event
+  error,  // New: Show error message
+  inputMode = "text", 
   maxLength
 }: any) => (
-  <div className={`relative ${className}`}>
+  <div className={`relative ${className} mb-4`}> {/* Added mb-4 for error space */}
     <input
       required={required}
       type={type}
@@ -32,20 +34,42 @@ const InputField = ({
       readOnly={readOnly}
       placeholder=" "
       onChange={onChange}
-      inputMode={inputMode as any} // Forces Numpad on Mobile
+      onBlur={onBlur} // Trigger validation on leave
+      inputMode={inputMode as any}
       maxLength={maxLength}
-      className={`peer w-full px-4 pt-6 pb-2 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold transition-all placeholder-transparent
-        ${readOnly ? "bg-gray-50 text-gray-500 border-gray-100 cursor-not-allowed" : "border-gray-200"}`}
+      className={`peer w-full px-4 pt-6 pb-2 bg-white border rounded-xl focus:outline-none focus:ring-2 transition-all placeholder-transparent
+        ${readOnly ? "bg-gray-50 text-gray-500 border-gray-100 cursor-not-allowed" : ""}
+        ${error 
+          ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" 
+          : "border-gray-200 focus:border-brand-gold focus:ring-brand-gold/20"
+        }
+      `}
     />
     <label
       htmlFor={name}
-      className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-bold text-gray-400 transition-all 
-                 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-500 peer-placeholder-shown:font-normal peer-placeholder-shown:normal-case
-                 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-brand-gold peer-focus:font-bold peer-focus:uppercase"
+      className={`absolute left-4 top-2 text-[10px] uppercase tracking-wider font-bold transition-all 
+                 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:font-normal peer-placeholder-shown:normal-case
+                 peer-focus:top-2 peer-focus:text-[10px] peer-focus:font-bold peer-focus:uppercase
+                 ${error 
+                   ? "text-red-500 peer-placeholder-shown:text-red-500 peer-focus:text-red-500" 
+                   : "text-gray-400 peer-placeholder-shown:text-gray-500 peer-focus:text-brand-gold"
+                 }
+      `}
     >
-      {label} {required && <span className="text-red-500">*</span>}
+      {label} {required && <span className={error ? "text-red-500" : "text-red-500"}>*</span>}
     </label>
-    {icon && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>}
+    
+    {/* Icon or Error Icon */}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+      {error ? <AlertCircle className="w-5 h-5 text-red-500" /> : icon}
+    </div>
+
+    {/* Error Message Text */}
+    {error && (
+      <span className="absolute -bottom-5 left-4 text-[10px] text-red-500 font-medium animate-fade-in-up">
+        {error}
+      </span>
+    )}
   </div>
 );
 
@@ -58,6 +82,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [saveInfo, setSaveInfo] = useState(false);
 
+  // Form State
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -65,6 +90,12 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     postcode: "",
+    email: "",
+    phone: "",
+  });
+
+  // Error State
+  const [errors, setErrors] = useState({
     email: "",
     phone: "",
   });
@@ -103,10 +134,33 @@ export default function CheckoutPage() {
     }
   };
 
+  // --- NEW: Handle Blur (Validation) ---
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value) && value.length > 0) {
+        setErrors((prev) => ({ ...prev, email: "Please enter a valid email address" }));
+      }
+    }
+
+    if (name === "phone") {
+      if (value.length !== 10 && value.length > 0) {
+        setErrors((prev) => ({ ...prev, phone: "Phone number must be exactly 10 digits" }));
+      }
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // Validation Logic
+    // Clear errors immediately when user starts typing to fix it
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Logic
     if (name === "phone") {
       if (!/^\d*$/.test(value) || value.length > 10) return;
     }
@@ -116,7 +170,6 @@ export default function CheckoutPage() {
       if (value.length === 6) handlePinCodeLookup(value);
     }
 
-    // Use functional update to ensure reliability
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -124,14 +177,22 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    if (items.length === 0) {
-      toast.error("Your cart is empty");
+    // Final Validation Check
+    if (formData.phone.length !== 10) {
+      setErrors((prev) => ({ ...prev, phone: "10-digit number required" }));
+      toast.error("Please fix the phone number");
+      setLoading(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setErrors((prev) => ({ ...prev, email: "Valid email required" }));
+      toast.error("Please fix the email address");
       setLoading(false);
       return;
     }
 
-    if (formData.phone.length !== 10) {
-      toast.error("Please enter a valid 10-digit phone number");
+    if (items.length === 0) {
+      toast.error("Your cart is empty");
       setLoading(false);
       return;
     }
@@ -225,6 +286,7 @@ export default function CheckoutPage() {
                   onChange={handleInputChange}
                 />
                 
+                {/* Email with Validation */}
                 <InputField 
                   name="email" 
                   label="Email Address" 
@@ -232,16 +294,22 @@ export default function CheckoutPage() {
                   className="md:col-span-2" 
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.email}
                 />
+                
+                {/* Phone with Validation */}
                 <InputField 
                   name="phone" 
                   label="Phone Number" 
                   type="tel" 
-                  inputMode="numeric" // Shows Numpad
+                  inputMode="numeric"
                   maxLength={10}
                   className="md:col-span-2" 
                   value={formData.phone}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.phone}
                 />
                 
                 <InputField 
@@ -255,7 +323,7 @@ export default function CheckoutPage() {
                 <InputField 
                   name="postcode" 
                   label="Pincode" 
-                  inputMode="numeric" // Shows Numpad
+                  inputMode="numeric" 
                   maxLength={6}
                   value={formData.postcode}
                   onChange={handleInputChange}

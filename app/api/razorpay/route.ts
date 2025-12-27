@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
-import shortid from "shortid";
-
+import { nanoid } from "nanoid";
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
@@ -14,7 +13,7 @@ export async function POST(req: Request) {
     const options = {
       amount: Math.round(amount * 100), // Convert to paise (e.g., 500 INR -> 50000 paise)
       currency: "INR",
-      receipt: shortid.generate(),
+      receipt: nanoid(),
     };
 
     const order = await razorpay.orders.create(options);

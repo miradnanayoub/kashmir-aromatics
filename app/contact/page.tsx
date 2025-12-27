@@ -57,13 +57,17 @@ export default function ContactPage() {
             <div className="space-y-6 font-sans text-sm">
               <div>
                 <h3 className="font-bold text-gray-900 uppercase tracking-widest mb-2">Email</h3>
-                <p className="text-gray-600">hello@kashmiraromatics.in</p>
+                <p className="text-gray-600">ufkashmiraromatics@gmail.com</p>
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 uppercase tracking-widest mb-2">Studio</h3>
+                <h3 className="font-bold text-gray-900 uppercase tracking-widest mb-2">Mobile</h3>
+                <p className="text-gray-600">+91 8825068689</p>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 uppercase tracking-widest mb-2">Address</h3>
                 <p className="text-gray-600">
-                  12 Saffron Lane, Pampore<br />
-                  Jammu & Kashmir, India 192121
+                  Yarikalan, Chadoora, Budgam<br />
+                  Jammu & Kashmir, India 191113
                 </p>
               </div>
             </div>

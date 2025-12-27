@@ -16,9 +16,11 @@
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
     "nextjs-toploader": "^3.9.17",
+    "razorpay": "^2.9.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "react-hot-toast": "^2.6.0",
+    "shortid": "^2.2.17",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

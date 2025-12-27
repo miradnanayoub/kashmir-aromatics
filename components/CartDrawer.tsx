@@ -1,9 +1,10 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { X, Minus, Plus, ShoppingCart } from "lucide-react";
+// 1. Changed 'X' to 'Trash2' for better semantics
+import { X, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react"; 
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Import Router
+import { useRouter } from "next/navigation"; 
 
 export default function CartDrawer() {
   const { 
@@ -13,15 +14,15 @@ export default function CartDrawer() {
     removeItem, 
     updateQuantity, 
     cartTotal 
-  } = useCart(); // Removed 'checkout' from here
+  } = useCart(); 
 
-  const router = useRouter(); // Initialize Router
+  const router = useRouter(); 
 
   if (!isCartOpen) return null;
 
   const handleCheckout = () => {
-    toggleCart(); // Close the drawer first
-    router.push("/checkout"); // Navigate to the new page
+    toggleCart(); 
+    router.push("/checkout"); 
   };
 
   return (
@@ -53,7 +54,7 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-              <ShoppingBag className="w-12 h-12 text-gray-200" />
+              <ShoppingCart className="w-12 h-12 text-gray-200" />
               <p className="text-gray-400 font-sans">Your bag is empty.</p>
               <button 
                 onClick={toggleCart}
@@ -79,14 +80,19 @@ export default function CartDrawer() {
                 <div className="flex-1 flex flex-col justify-between py-1">
                   <div>
                     <div className="flex justify-between items-start">
-                      <h3 className="font-serif text-gray-900 leading-tight pr-4">
+                      <h3 className="font-serif text-gray-900 leading-tight pr-4 line-clamp-2">
                         {item.title}
                       </h3>
+                      
+                      {/* --- REFINED REMOVE BUTTON --- */}
                       <button 
                         onClick={() => removeItem(item.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        // Added 'p-1' for larger touch target
+                        className="p-1 -mr-1 text-gray-300 hover:text-red-500 transition-colors"
+                        title="Remove item"
                       >
-                        <X className="w-4 h-4" />
+                        {/* Changed to Trash2 for clarity */}
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
@@ -138,7 +144,6 @@ export default function CartDrawer() {
               Shipping & taxes calculated at checkout.
             </p>
             
-            {/* UPDATED BUTTON */}
             <button
               onClick={handleCheckout}
               className="w-full bg-[#1A1A1A] text-white py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#D4AF37] transition-all duration-300 shadow-lg"

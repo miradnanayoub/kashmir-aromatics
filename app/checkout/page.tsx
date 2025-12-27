@@ -1,18 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/context/CartContext";
-import { Loader2, CheckCircle, CreditCard, Banknote, ShieldCheck, Lock } from "lucide-react";
+import { Loader2, CheckCircle, CreditCard, Banknote, ShieldCheck, Lock, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+// --- FIXED: Component Defined OUTSIDE to prevent focus loss ---
+const InputField = ({ 
+  name, 
+  label, 
+  type = "text", 
+  required = true, 
+  className = "", 
+  readOnly = false, 
+  icon = null,
+  value,
+  onChange,
+  inputMode = "text", // New Prop for Numpad
+  maxLength
+}: any) => (
+  <div className={`relative ${className}`}>
+    <input
+      required={required}
+      type={type}
+      name={name}
+      id={name}
+      value={value} 
+      readOnly={readOnly}
+      placeholder=" "
+      onChange={onChange}
+      inputMode={inputMode as any} // Forces Numpad on Mobile
+      maxLength={maxLength}
+      className={`peer w-full px-4 pt-6 pb-2 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold transition-all placeholder-transparent
+        ${readOnly ? "bg-gray-50 text-gray-500 border-gray-100 cursor-not-allowed" : "border-gray-200"}`}
+    />
+    <label
+      htmlFor={name}
+      className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-bold text-gray-400 transition-all 
+                 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-500 peer-placeholder-shown:font-normal peer-placeholder-shown:normal-case
+                 peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-brand-gold peer-focus:font-bold peer-focus:uppercase"
+    >
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    {icon && <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">{icon}</div>}
+  </div>
+);
+
 export default function CheckoutPage() {
   const { items, cartTotal } = useCart();
   const router = useRouter();
+  
   const [loading, setLoading] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [saveInfo, setSaveInfo] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -25,8 +69,55 @@ export default function CheckoutPage() {
     phone: "",
   });
 
+  useEffect(() => {
+    const savedData = localStorage.getItem("checkout_info");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+      setSaveInfo(true);
+    }
+  }, []);
+
+  const handlePinCodeLookup = async (pincode: string) => {
+    if (pincode.length !== 6) return;
+
+    setPinLoading(true);
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+      const data = await res.json();
+
+      if (data[0].Status === "Success") {
+        const details = data[0].PostOffice[0];
+        setFormData((prev) => ({
+          ...prev,
+          city: details.District,
+          state: details.State,
+        }));
+        toast.success(`Found: ${details.District}, ${details.State}`);
+      } else {
+        toast.error("Invalid Pincode");
+      }
+    } catch (error) {
+      console.error("Failed to fetch pincode details");
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // Validation Logic
+    if (name === "phone") {
+      if (!/^\d*$/.test(value) || value.length > 10) return;
+    }
+    
+    if (name === "postcode") {
+      if (!/^\d*$/.test(value) || value.length > 6) return;
+      if (value.length === 6) handlePinCodeLookup(value);
+    }
+
+    // Use functional update to ensure reliability
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +128,18 @@ export default function CheckoutPage() {
       toast.error("Your cart is empty");
       setLoading(false);
       return;
+    }
+
+    if (formData.phone.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
+      setLoading(false);
+      return;
+    }
+
+    if (saveInfo) {
+      localStorage.setItem("checkout_info", JSON.stringify(formData));
+    } else {
+      localStorage.removeItem("checkout_info");
     }
 
     const orderData = {
@@ -81,29 +184,6 @@ export default function CheckoutPage() {
     }
   };
 
-  // Reusable Input Component for consistent style
-  const InputField = ({ name, label, type = "text", required = true, className = "" }: any) => (
-    <div className={`relative ${className}`}>
-      <input
-        required={required}
-        type={type}
-        name={name}
-        id={name}
-        placeholder=" "
-        onChange={handleInputChange}
-        className="peer w-full px-4 pt-6 pb-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold transition-all placeholder-transparent"
-      />
-      <label
-        htmlFor={name}
-        className="absolute left-4 top-2 text-[10px] uppercase tracking-wider font-bold text-gray-400 transition-all 
-                   peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-500 peer-placeholder-shown:font-normal peer-placeholder-shown:normal-case
-                   peer-focus:top-2 peer-focus:text-[10px] peer-focus:text-brand-gold peer-focus:font-bold peer-focus:uppercase"
-      >
-        {label}
-      </label>
-    </div>
-  );
-
   return (
     <main className="min-h-screen bg-[#FAFAF9]">
       <Navbar />
@@ -121,7 +201,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           
-          {/* --- LEFT: FORMS (Shipping & Payment) --- */}
+          {/* --- LEFT: FORMS --- */}
           <div className="lg:col-span-7 space-y-10">
             
             {/* Step 1: Shipping */}
@@ -132,19 +212,86 @@ export default function CheckoutPage() {
               </h2>
 
               <form id="checkout-form" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField name="firstName" label="First Name" />
-                <InputField name="lastName" label="Last Name" />
+                <InputField 
+                  name="firstName" 
+                  label="First Name" 
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                />
+                <InputField 
+                  name="lastName" 
+                  label="Last Name" 
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                />
                 
-                <InputField name="email" label="Email Address" type="email" className="md:col-span-2" />
-                <InputField name="phone" label="Phone Number" type="tel" className="md:col-span-2" />
+                <InputField 
+                  name="email" 
+                  label="Email Address" 
+                  type="email" 
+                  className="md:col-span-2" 
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+                <InputField 
+                  name="phone" 
+                  label="Phone Number" 
+                  type="tel" 
+                  inputMode="numeric" // Shows Numpad
+                  maxLength={10}
+                  className="md:col-span-2" 
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                />
                 
-                <InputField name="address1" label="Street Address" className="md:col-span-2" />
+                <InputField 
+                  name="address1" 
+                  label="Street Address" 
+                  className="md:col-span-2" 
+                  value={formData.address1}
+                  onChange={handleInputChange}
+                />
                 
-                <InputField name="city" label="City" />
-                <InputField name="postcode" label="Pincode" />
+                <InputField 
+                  name="postcode" 
+                  label="Pincode" 
+                  inputMode="numeric" // Shows Numpad
+                  maxLength={6}
+                  value={formData.postcode}
+                  onChange={handleInputChange}
+                  icon={pinLoading ? <Loader2 className="w-4 h-4 animate-spin text-brand-gold" /> : <MapPin className="w-4 h-4" />}
+                />
                 
-                <InputField name="state" label="State" className="md:col-span-2" />
+                <InputField 
+                  name="city" 
+                  label="City" 
+                  readOnly 
+                  value={formData.city}
+                  onChange={handleInputChange}
+                /> 
+                <InputField 
+                  name="state" 
+                  label="State" 
+                  readOnly 
+                  className="md:col-span-2" 
+                  value={formData.state}
+                  onChange={handleInputChange}
+                />
               </form>
+
+              {/* Save Info Checkbox */}
+              <div className="mt-4 flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id="saveInfo"
+                  checked={saveInfo}
+                  onChange={(e) => setSaveInfo(e.target.checked)}
+                  className="w-4 h-4 text-brand-gold border-gray-300 rounded focus:ring-brand-gold"
+                />
+                <label htmlFor="saveInfo" className="text-sm text-gray-600 select-none cursor-pointer">
+                  Save my information for a faster checkout next time
+                </label>
+              </div>
             </section>
 
             {/* Step 2: Payment */}
@@ -189,15 +336,13 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </section>
-
           </div>
 
-          {/* --- RIGHT: ORDER SUMMARY (Sticky) --- */}
+          {/* --- RIGHT: ORDER SUMMARY --- */}
           <div className="lg:col-span-5 lg:sticky lg:top-32">
             <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40">
               <h3 className="font-serif text-2xl mb-6">Order Summary</h3>
               
-              {/* Product List */}
               <div className="space-y-6 mb-8 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 items-center group">
@@ -225,7 +370,6 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Totals */}
               <div className="border-t border-dashed border-gray-200 pt-6 space-y-3">
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Subtotal</span>
@@ -246,7 +390,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Confirm Button */}
               <button
                 onClick={handleSubmit}
                 disabled={loading}
@@ -262,9 +405,6 @@ export default function CheckoutPage() {
                 )}
               </button>
               
-              <div className="mt-6 flex justify-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                 {/* You can add payment icons here later */}
-              </div>
             </div>
           </div>
 

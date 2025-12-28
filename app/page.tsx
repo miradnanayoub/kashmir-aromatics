@@ -75,7 +75,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             {/* Value 1: Altitude - Delay 100ms */}
-            <RevealOnScroll delay={100}>
+            <RevealOnScroll>
               <div className="bg-[#262626] p-10 rounded-[2rem] hover:bg-[#333] transition-colors duration-500 border border-white/5 group h-full">
                 <div className="w-16 h-16 bg-brand-gold/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-brand-gold/20 transition-colors duration-500">
                   <Mountain className="w-8 h-8 text-brand-gold group-hover:scale-110 transition-transform duration-500" />
@@ -88,7 +88,7 @@ export default function Home() {
             </RevealOnScroll>
 
             {/* Value 2: Distillation - Delay 200ms */}
-            <RevealOnScroll delay={200}>
+            <RevealOnScroll>
               <div className="bg-[#262626] p-10 rounded-[2rem] hover:bg-[#333] transition-colors duration-500 border border-white/5 group h-full">
                 <div className="w-16 h-16 bg-brand-gold/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-brand-gold/20 transition-colors duration-500">
                   <FlaskConical className="w-8 h-8 text-brand-gold group-hover:scale-110 transition-transform duration-500" />
@@ -101,7 +101,7 @@ export default function Home() {
             </RevealOnScroll>
 
             {/* Value 3: Community - Delay 300ms */}
-            <RevealOnScroll delay={300}>
+            <RevealOnScroll>
               <div className="bg-[#262626] p-10 rounded-[2rem] hover:bg-[#333] transition-colors duration-500 border border-white/5 group h-full">
                 <div className="w-16 h-16 bg-brand-gold/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-brand-gold/20 transition-colors duration-500">
                   <Users className="w-8 h-8 text-brand-gold group-hover:scale-110 transition-transform duration-500" />
@@ -116,7 +116,7 @@ export default function Home() {
           </div>
           
           {/* Footer Link Reveal - Delay 400ms */}
-          <RevealOnScroll delay={400}>
+          <RevealOnScroll>
             <div className="mt-16 text-center">
               <Link 
                 href="/about" 

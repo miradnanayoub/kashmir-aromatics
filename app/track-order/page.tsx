@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/Navbar";
 import { useState } from "react";
-import { Loader2, Package, CheckCircle, Clock, Truck, XCircle } from "lucide-react";
+import { Loader2, Package, CheckCircle, Clock, Truck, XCircle, Search } from "lucide-react";
 
 export default function TrackOrderPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,100 +40,164 @@ export default function TrackOrderPage() {
     }
   }
 
-  // Helper to get status icon/color
+  // Helper to get status icon/color matching your brand theme
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'completed': return { icon: <CheckCircle className="w-8 h-8 text-green-500" />, color: "bg-green-50 text-green-700", text: "Completed" };
-      case 'processing': return { icon: <Loader2 className="w-8 h-8 text-blue-500 animate-spin-slow" />, color: "bg-blue-50 text-blue-700", text: "Processing" };
-      case 'on-hold': return { icon: <Clock className="w-8 h-8 text-amber-500" />, color: "bg-amber-50 text-amber-700", text: "On Hold" };
-      case 'cancelled': return { icon: <XCircle className="w-8 h-8 text-red-500" />, color: "bg-red-50 text-red-700", text: "Cancelled" };
-      default: return { icon: <Package className="w-8 h-8 text-gray-500" />, color: "bg-gray-50 text-gray-700", text: status };
+      case 'completed': 
+        return { 
+          icon: <CheckCircle className="w-6 h-6 text-green-600" />, 
+          bg: "bg-green-50 border-green-100", 
+          textClass: "text-green-800",
+          label: "Delivered" 
+        };
+      case 'processing': 
+        return { 
+          icon: <Loader2 className="w-6 h-6 text-brand-gold animate-spin-slow" />, 
+          bg: "bg-amber-50 border-amber-100", 
+          textClass: "text-amber-800",
+          label: "Processing" 
+        };
+      case 'on-hold': 
+        return { 
+          icon: <Clock className="w-6 h-6 text-orange-500" />, 
+          bg: "bg-orange-50 border-orange-100", 
+          textClass: "text-orange-800",
+          label: "On Hold" 
+        };
+      case 'cancelled': 
+        return { 
+          icon: <XCircle className="w-6 h-6 text-red-500" />, 
+          bg: "bg-red-50 border-red-100", 
+          textClass: "text-red-800",
+          label: "Cancelled" 
+        };
+      default: 
+        return { 
+          icon: <Package className="w-6 h-6 text-gray-500" />, 
+          bg: "bg-gray-50 border-gray-100", 
+          textClass: "text-gray-800",
+          label: status 
+        };
     }
   };
 
   return (
     <main className="bg-[#FAFAF9] min-h-screen">
-      
+      <Navbar />
 
-      <section className="pt-40 pb-20 px-6 max-w-3xl mx-auto">
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        
+        {/* Header */}
         <div className="text-center mb-12">
-          <span className="font-sans text-xs font-bold tracking-[0.3em] text-amber-600 uppercase mb-3 block">Order Status</span>
-          <h1 className="font-serif text-4xl text-gray-900">Track Your Order</h1>
+          <span className="font-sans text-xs font-bold tracking-[0.3em] text-brand-gold uppercase mb-3 block">
+            Order Status
+          </span>
+          <h1 className="font-serif text-3xl md:text-5xl text-gray-900">
+            Track Your Order
+          </h1>
+          <p className="text-gray-500 mt-4 text-sm max-w-lg mx-auto">
+            Enter your Order ID and Email to see the current status of your shipment.
+          </p>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <form onSubmit={handleTrack} className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="flex-1">
-              <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Order ID</label>
+        {/* Card Container */}
+        <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl shadow-gray-200/40 border border-gray-100">
+          
+          <form onSubmit={handleTrack} className="flex flex-col md:flex-row gap-6 mb-10">
+            <div className="flex-1 space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Order ID</label>
               <input 
                 name="orderId" 
                 type="text" 
                 placeholder="e.g. 1502" 
                 required
-                className="w-full border border-gray-200 rounded p-3 focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition"
+                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold transition-all"
               />
             </div>
-            <div className="flex-1">
-              <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Billing Email</label>
+            <div className="flex-1 space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Billing Email</label>
               <input 
                 name="email" 
                 type="email" 
                 placeholder="email@example.com" 
                 required
-                className="w-full border border-gray-200 rounded p-3 focus:outline-none focus:border-amber-600 focus:ring-1 focus:ring-amber-600 transition"
+                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold transition-all"
               />
             </div>
             <div className="flex items-end">
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="h-[50px] px-8 bg-gray-900 text-white font-bold uppercase tracking-widest text-xs rounded hover:bg-amber-600 transition-colors disabled:opacity-70 flex items-center justify-center w-full md:w-auto"
+                className="h-[58px] px-8 bg-brand-black text-white font-bold uppercase tracking-wider text-xs rounded-full hover:bg-brand-gold transition-all shadow-lg hover:shadow-brand-gold/20 disabled:opacity-70 flex items-center justify-center gap-2 w-full md:w-auto"
               >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Track"}
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>Track</span>
+                    <Search className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
           </form>
 
           {/* --- RESULTS AREA --- */}
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded text-center text-sm border border-red-100">
+            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center text-sm border border-red-100 flex items-center justify-center gap-2 animate-fade-in-up">
+              <XCircle className="w-4 h-4" />
               {error}
             </div>
           )}
 
           {orderData && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className={`p-6 rounded-lg border border-gray-100 flex items-center gap-4 mb-6 ${getStatusStyle(orderData.status).color}`}>
-                {getStatusStyle(orderData.status).icon}
+            <div className="animate-fade-in-up">
+              
+              {/* Status Banner */}
+              <div className={`p-6 rounded-2xl border flex items-center gap-5 mb-8 ${getStatusStyle(orderData.status).bg}`}>
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  {getStatusStyle(orderData.status).icon}
+                </div>
                 <div>
-                  <h3 className="font-serif text-xl font-medium capitalize">{getStatusStyle(orderData.status).text}</h3>
-                  <p className="text-xs opacity-80 uppercase tracking-wider mt-1">Order #{orderData.id}</p>
+                  <h3 className={`font-serif text-xl font-bold capitalize ${getStatusStyle(orderData.status).textClass}`}>
+                    {getStatusStyle(orderData.status).label}
+                  </h3>
+                  <p className={`text-xs opacity-80 uppercase tracking-wider mt-1 ${getStatusStyle(orderData.status).textClass}`}>
+                    Order #{orderData.id}
+                  </p>
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-6">
-                <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider mb-4">Order Items</h4>
-                <ul className="space-y-4">
+              {/* Order Details */}
+              <div className="border-t border-dashed border-gray-200 pt-8">
+                <h4 className="font-serif text-lg text-gray-900 mb-6 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-gray-400" />
+                  Order Summary
+                </h4>
+                
+                <ul className="space-y-4 mb-6">
                   {orderData.items.map((item: any, i: number) => (
-                    <li key={i} className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">
-                        <span className="font-medium text-gray-900">{item.quantity}x</span> {item.name}
-                      </span>
-                      <span className="font-medium text-gray-900">
-                        {/* Assuming currency symbol is in the data, simpler display here */}
-                        Wait for total
+                    <li key={i} className="flex justify-between items-start text-sm py-2 border-b border-gray-50 last:border-0">
+                      <div className="flex-1 pr-4">
+                        <span className="font-bold text-brand-black mr-2">{item.quantity}x</span>
+                        <span className="text-gray-600">{item.name}</span>
+                      </div>
+                      <span className="font-medium text-gray-900 whitespace-nowrap">
+                         {/* FIX: Display actual item total instead of "Wait for total" */}
+                         {item.total ? `₹${item.total}` : ''}
                       </span>
                     </li>
                   ))}
                 </ul>
-                <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="font-serif text-xl text-amber-600 font-medium">
-                     {/* Try to parse currency symbol if available, else standard */}
+
+                <div className="bg-gray-50 rounded-xl p-6 flex justify-between items-center border border-gray-100">
+                  <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Total Amount</span>
+                  <span className="font-serif text-2xl text-brand-black">
                      ₹{orderData.total}
                   </span>
                 </div>
               </div>
+
             </div>
           )}
         </div>

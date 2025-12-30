@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { useState } from "react";
 
 interface Category {
   id: number;
@@ -11,74 +13,115 @@ interface Category {
 export default function ShopFilters({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Get current active filters from URL
-  const currentCategory = searchParams.get("category") || "";
+  // Get current active filters
+  const currentCategory = searchParams.get("category");
   const currentSort = searchParams.get("sort") || "date";
 
-  const handleFilterChange = (key: string, value: string) => {
+  // Category Handler
+  const handleCategoryChange = (catId: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
-    
-    if (value) {
-      params.set(key, value);
+    if (catId) {
+      params.set("category", catId);
     } else {
-      params.delete(key);
+      params.delete("category");
     }
-    
-    // Push new URL; Server Component will re-render with new data
-    // We check pathname to ensure we stay on the current page
-    const path = window.location.pathname; 
-    router.push(`${path}?${params.toString()}`);
+    router.push(`/shop?${params.toString()}`);
+    // Optional: Close drawer on selection if you prefer
+    // setIsOpen(false); 
+  };
+
+  // Sort Handler
+  const handleSortChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sort", value);
+    router.push(`/shop?${params.toString()}`);
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-      {/* Categories Buttons */}
-      {/* UPDATED: Added 'justify-center md:justify-start' to center on mobile only */}
-      <div className="flex flex-wrap justify-center md:justify-start gap-2">
-        <button
-          onClick={() => handleFilterChange("category", "")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
-            !currentCategory
-              ? "bg-amber-600 text-white border-amber-600"
-              : "bg-white text-gray-700 border-gray-200 hover:border-amber-600"
+    <div className="mb-6 w-full relative z-20"> 
+      
+      {/* --- TOP BAR: COMPACT SINGLE ROW --- */}
+      <div className="flex flex-row items-center justify-between gap-2 pb-4 border-b border-gray-100">
+        
+        {/* Left: Compact Filter Button */}
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all border shrink-0 ${
+            isOpen 
+              ? "bg-brand-black text-white border-brand-black" 
+              : "bg-white text-gray-900 border-gray-200 hover:border-gray-400"
           }`}
         >
-          All
+          {isOpen ? <X className="w-3.5 h-3.5" /> : <SlidersHorizontal className="w-3.5 h-3.5" />}
+          <span>Filter</span>
+          <span className="hidden sm:inline"> Categories</span>
         </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleFilterChange("category", String(cat.id))}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
-              currentCategory === String(cat.id)
-                ? "bg-amber-600 text-white border-amber-600"
-                : "bg-white text-gray-700 border-gray-200 hover:border-amber-600"
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
 
-      {/* Sort Dropdown */}
-      <div className="relative">
-        <select
-          value={currentSort}
-          onChange={(e) => handleFilterChange("sort", e.target.value)}
-          className="appearance-none bg-white border border-gray-200 text-gray-700 py-2 pl-4 pr-8 rounded-lg text-sm focus:outline-none focus:border-amber-600 cursor-pointer"
-        >
-          <option value="date">Newest Arrivals</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="title">Name (A-Z)</option>
-        </select>
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-          </svg>
+        {/* Right: Integrated Sort Section */}
+        <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
+          {/* UPDATED: Always visible "Sort By:" label */}
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+            Sort By:
+          </span>
+          
+          <div className="relative">
+            <select 
+              value={currentSort}
+              onChange={(e) => handleSortChange(e.target.value)}
+              className="appearance-none bg-transparent text-gray-900 text-[10px] sm:text-xs font-bold uppercase tracking-widest py-2 pr-5 pl-1 text-right focus:outline-none cursor-pointer hover:text-brand-black transition-colors"
+            >
+              <option value="date">Newest</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="title">Name: A-Z</option>
+            </select>
+            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
+
+      {/* --- EXPANDABLE CATEGORY DRAWER --- */}
+      <div 
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[500px] opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="bg-white rounded-xl">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 pl-1">
+              Select Category
+            </h3>
+            
+            <div className="flex flex-wrap gap-2">
+              <button
+                  onClick={() => handleCategoryChange(null)}
+                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border ${
+                  !currentCategory
+                      ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20"
+                      : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100"
+                  }`}
+              >
+                  All Items
+              </button>
+              
+              {categories.map((cat) => (
+                  <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(String(cat.id))}
+                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border ${
+                      currentCategory === String(cat.id)
+                      ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20"
+                      : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100"
+                  }`}
+                  >
+                  {cat.name}
+                  </button>
+              ))}
+            </div>
+        </div>
+      </div>
+      
     </div>
   );
 }

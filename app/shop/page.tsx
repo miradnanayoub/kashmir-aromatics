@@ -59,7 +59,7 @@ export default async function ShopPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#FAFAF9] pt-28 md:pt-32">
+    <main className="min-h-screen bg-[#FAFAF9] pt-22 md:pt-26">
       
       <div className="max-w-[1400px] mx-auto px-6 pb-24">
         <ShopFilters categories={categories} />

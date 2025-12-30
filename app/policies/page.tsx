@@ -156,7 +156,7 @@ export default function PoliciesPage() {
               {/* Expandable Content */}
               <div 
                 className={`transition-all duration-300 ease-in-out ${
-                  openSection === policy.id ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+                  openSection === policy.id ? "max-h-[4000px] opacity-100" : "max-h-0 opacity-0"
                 }`}
               >
                 <div className="px-6 pb-8 pl-[4.5rem] prose prose-stone prose-sm md:prose-base text-gray-600 max-w-none">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, SlidersHorizontal, X, Loader2 } from "lucide-react"; // Added Loader2
+import { useState, useEffect } from "react"; // Added useEffect
 
 interface Category {
   id: number;
@@ -14,13 +14,24 @@ export default function ShopFilters({ categories }: { categories: Category[] }) 
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
+  
+  // New State: Track which category is currently being loaded
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
 
   // Get current active filters
   const currentCategory = searchParams.get("category");
   const currentSort = searchParams.get("sort") || "date";
 
+  // Reset pending state when URL changes (navigation complete)
+  useEffect(() => {
+    setPendingCategory(null);
+  }, [searchParams]);
+
   // Category Handler
   const handleCategoryChange = (catId: string | null) => {
+    // 1. Set the pending state immediately for UI feedback
+    setPendingCategory(catId ?? 'all');
+
     const params = new URLSearchParams(searchParams.toString());
     if (catId) {
       params.set("category", catId);
@@ -28,8 +39,6 @@ export default function ShopFilters({ categories }: { categories: Category[] }) 
       params.delete("category");
     }
     router.push(`/shop?${params.toString()}`);
-    // Optional: Close drawer on selection if you prefer
-    // setIsOpen(false); 
   };
 
   // Sort Handler
@@ -61,13 +70,12 @@ export default function ShopFilters({ categories }: { categories: Category[] }) 
 
         {/* Right: Integrated Sort Section */}
         <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
-          {/* UPDATED: Always visible "Sort By:" label */}
           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
             Sort By:
           </span>
           
           <div className="relative">
-            <select 
+            <select
               value={currentSort}
               onChange={(e) => handleSortChange(e.target.value)}
               className="appearance-none bg-transparent text-gray-900 text-[10px] sm:text-xs font-bold uppercase tracking-widest py-2 pr-5 pl-1 text-right focus:outline-none cursor-pointer hover:text-brand-black transition-colors"
@@ -94,27 +102,39 @@ export default function ShopFilters({ categories }: { categories: Category[] }) 
             </h3>
             
             <div className="flex flex-wrap gap-2">
+              {/* ALL ITEMS BUTTON */}
               <button
                   onClick={() => handleCategoryChange(null)}
-                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border ${
-                  !currentCategory
-                      ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20"
-                      : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100"
+                  disabled={pendingCategory !== null} // Prevent double clicks
+                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border flex items-center gap-2 ${
+                  // CONDITIONAL STYLING LOGIC:
+                  pendingCategory === 'all' 
+                      ? "border-brand-gold text-brand-gold bg-white" // LOADING STATE (Outline)
+                      : !currentCategory
+                          ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20" // ACTIVE STATE
+                          : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100" // INACTIVE STATE
                   }`}
               >
+                  {pendingCategory === 'all' && <Loader2 className="w-3 h-3 animate-spin" />}
                   All Items
               </button>
               
+              {/* CATEGORY LIST */}
               {categories.map((cat) => (
                   <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(String(cat.id))}
-                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border ${
-                      currentCategory === String(cat.id)
-                      ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20"
-                      : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100"
+                  disabled={pendingCategory !== null}
+                  className={`px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border flex items-center gap-2 ${
+                      // CONDITIONAL STYLING LOGIC:
+                      pendingCategory === String(cat.id)
+                        ? "border-brand-gold text-brand-gold bg-white" // LOADING STATE (Outline)
+                        : currentCategory === String(cat.id)
+                            ? "bg-brand-gold text-white border-brand-gold shadow-md shadow-brand-gold/20" // ACTIVE STATE
+                            : "bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100" // INACTIVE STATE
                   }`}
                   >
+                  {pendingCategory === String(cat.id) && <Loader2 className="w-3 h-3 animate-spin" />}
                   {cat.name}
                   </button>
               ))}

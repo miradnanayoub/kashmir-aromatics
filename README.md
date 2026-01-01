@@ -68,3 +68,16 @@ A premium, full-stack e-commerce web application designed for selling authentic 
 │   ├── apolloClient.ts     # Apollo Client configuration
 │   └── queries.ts          # GraphQL query definitions
 └── public/                 # Static assets
+
+## ⚙️ Environment Variables
+
+To run this project, add the following to your `.env.local` file:
+
+```env
+# WordPress GraphQL Endpoint
+NEXT_PUBLIC_WORDPRESS_API_URL=[https://your-wordpress-site.com/graphql](https://your-wordpress-site.com/graphql)
+
+# Razorpay Configuration
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxx
+RAZORPAY_KEY_SECRET=xxxxxx
+
